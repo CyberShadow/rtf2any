@@ -253,6 +253,13 @@ struct Parser
 				case "}":
 					blocks ~= Block(BlockType.Text, attr, e.word.word);
 					break;
+				case "tab"      : blocks ~= Block(BlockType.Text, attr, "\t"      ); break;
+				case "emdash"   : blocks ~= Block(BlockType.Text, attr, "\&mdash;"); break;
+				case "endash"   : blocks ~= Block(BlockType.Text, attr, "\&ndash;"); break;
+				case "lquote"   : blocks ~= Block(BlockType.Text, attr, "\&lsquo;"); break;
+				case "rquote"   : blocks ~= Block(BlockType.Text, attr, "\&rsquo;"); break;
+				case "ldblquote": blocks ~= Block(BlockType.Text, attr, "\&ldquo;"); break;
+				case "rdblquote": blocks ~= Block(BlockType.Text, attr, "\&rdquo;"); break;
 				case "par":
 					BlockAttr parAttr;
 					parAttr.listLevel = attr.listLevel; // discard all attributes except list level for endlines
