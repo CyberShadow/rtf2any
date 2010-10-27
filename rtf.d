@@ -254,7 +254,9 @@ struct Parser
 					blocks ~= Block(BlockType.Text, attr, e.word.word);
 					break;
 				case "par":
-					blocks ~= Block(BlockType.NewParagraph, attr);
+					BlockAttr parAttr;
+					parAttr.listLevel = attr.listLevel; // discard all attributes except list level for endlines
+					blocks ~= Block(BlockType.NewParagraph, parAttr);
 					break;
 				case "page":
 					blocks ~= Block(BlockType.PageBreak);
