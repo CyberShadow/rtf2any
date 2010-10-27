@@ -12,7 +12,7 @@ class MediaWikiFormatter : NestedFormatter
 
 	void pre()
 	{
-		if (bulletPending)
+		if (bulletPending && listLevel)
 		{
 			foreach (i; 0..listLevel)
 				s ~= "*";
@@ -28,14 +28,14 @@ class MediaWikiFormatter : NestedFormatter
 	override void addItalic() { pre(); s ~= "''"; }
 	override void addUnderline() { pre(); s ~= "<u>"; }
 	override void addListLevel(int level) { listLevel = level; bulletPending = true; }
-	override void addFontSize(int size) { if (size > 20) s ~= "== "; }
-	override void addFontColor(int color) { s ~= .format(`<span style="color: #%06x">`, color); }
+	override void addFontSize(int size) { pre(); if (size > 20) s ~= "== "; else if (size < 20) s ~= "<small>"; }
+	override void addFontColor(int color) { pre(); s ~= .format(`<span style="color: #%06x">`, color); }
 	
 	override void removeBold() { s ~= "'''"; }
 	override void removeItalic() { s ~= "''"; }
 	override void removeUnderline() { s ~= "</u>"; }
 	override void removeListLevel(int level) { listLevel = level-1; }
-	override void removeFontSize(int size) { if (size > 20) s ~= " =="; }
+	override void removeFontSize(int size) { if (size > 20) s ~= " =="; else if (size < 20) s ~= "</small>"; }
 	override void removeFontColor(int color) { s ~= "</span>"; }
 }
 
