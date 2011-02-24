@@ -22,7 +22,7 @@ class MediaWikiFormatter : NestedFormatter
 	}
 
 	override void addText(string text) { pre(); s ~= text; }
-	override void newParagraph() { s ~= \n; if (listLevel) bulletPending = true; }
+	override void newParagraph() { s ~= "\n"; if (listLevel) bulletPending = true; }
 
 	override void addBold() { pre(); s ~= "'''"; }
 	override void addItalic() { pre(); s ~= "''"; }

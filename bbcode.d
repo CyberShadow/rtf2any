@@ -12,7 +12,7 @@ class BBCodeFormatter : NestedFormatter
 	void pre() { if (bulletPending) s ~= "[*]", bulletPending = false; }
 
 	override void addText(string text) { pre(); s ~= text; }
-	override void newParagraph() { s ~= \n; if (inList) bulletPending = true; }
+	override void newParagraph() { s ~= "\n"; if (inList) bulletPending = true; }
 
 	override void addBold() { pre(); s ~= "[B]"; }
 	override void addItalic() { pre(); s ~= "[I]"; }
