@@ -278,7 +278,7 @@ struct Parser
 					attr.fontSize = e.word.num;
 					break;
 				case "li":
-					attr.listLevel = ((e.word.num) + 180) / 360; // HACK: W:A-readme-specific
+					attr.listLevel = ((e.word.num) + /*180*/360) / 360; // HACK: W:A-readme-specific
 					break;
 				case "b":
 					attr.bold = e.word.flag;
