@@ -269,7 +269,7 @@ struct Parser
 					blocks ~= Block(BlockType.PageBreak);
 					break;
 				case "pard":
-					attr = initAttr;
+					attr.listLevel = initAttr.listLevel;
 					break;
 				case "cf":
 					attr.fontColor = colors[e.word.num];
