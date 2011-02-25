@@ -24,6 +24,7 @@ class NestedFormatter
 	}
 
 	Block[] blocks;
+	int blockIndex;
 
 	this(Block[] blocks)
 	{
@@ -132,8 +133,10 @@ class NestedFormatter
 	{
 		FormatChange[] stack;
 
-		foreach (ref block; blocks)
+		foreach (bi, ref block; blocks)
 		{
+			blockIndex = bi;
+
 			FormatChange[] newList = attrToChanges(block.attr);
 
 			foreach (i, f; stack)
@@ -171,6 +174,7 @@ class NestedFormatter
 		}
 
 		// close remaining tags
+		blockIndex = blocks.length;
 		foreach_reverse(rf; stack)
 			removeFormat(rf);
 

@@ -21,6 +21,9 @@ class MediaWikiFormatter : NestedFormatter
 		}
 	}
 
+	bool paraStart() { return blockIndex==0 || blocks[blockIndex-1].type == BlockType.NewParagraph; }
+	bool paraEnd() { return blockIndex==blocks.length || blocks[blockIndex].type == BlockType.NewParagraph; }
+
 	override void addText(string text) { pre(); s ~= text; }
 	override void newParagraph() { s ~= "\n"; if (listLevel) bulletPending = true; }
 
@@ -28,14 +31,14 @@ class MediaWikiFormatter : NestedFormatter
 	override void addItalic() { pre(); s ~= "''"; }
 	override void addUnderline() { pre(); s ~= "<u>"; }
 	override void addListLevel(int level) { listLevel = level; bulletPending = true; }
-	override void addFontSize(int size) { pre(); if (size > 25) s ~= "== "; else if (size > 20) s ~= "=== "; else if (size < 20) s ~= "<small>"; }
+	override void addFontSize(int size) { pre(); if (size > 25 && paraStart) s ~= "== "; else if (size > 20 && paraStart) s ~= "=== "; else if (size < 20) s ~= "<small>"; }
 	override void addFontColor(int color) { pre(); s ~= .format(`<span style="color: #%06x">`, color); }
 	
 	override void removeBold() { s ~= "'''"; }
 	override void removeItalic() { s ~= "''"; }
 	override void removeUnderline() { s ~= "</u>"; }
 	override void removeListLevel(int level) { listLevel = level-1; }
-	override void removeFontSize(int size) { if (size > 25) s ~= " =="; else if (size > 20) s ~= " ==="; else if (size < 20) s ~= "</small>"; }
+	override void removeFontSize(int size) { if (size > 25 && paraEnd) s ~= " =="; else if (size > 20 && paraEnd) s ~= " ==="; else if (size < 20) s ~= "</small>"; }
 	override void removeFontColor(int color) { s ~= "</span>"; }
 }
 
