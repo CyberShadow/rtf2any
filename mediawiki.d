@@ -29,7 +29,7 @@ class MediaWikiFormatter : NestedFormatter
 	bool paraStart() { return blockIndex==0 || blocks[blockIndex-1].type == BlockType.NewParagraph; }
 	bool paraEnd() { return blockIndex==blocks.length || blocks[blockIndex].type == BlockType.NewParagraph; }
 
-	override void addText(string text) { pre(); if (inTable) text = text.replace("\t", " || "); s ~= text; }
+	override void addText(string text) { pre(); if (inTable) text = text.replace("\t", " || "); s ~= text.replace("<", "&lt;").replace(">", "&gt;").replace("{{", "<nowiki>{{</nowiki>").replace("}}", "<nowiki>}}</nowiki>"); }
 	override void newParagraph() { if (!inTable) s ~= "\n"; else s ~= "\n|-\n| "; if (listLevel) bulletPending = true; }
 
 	override void addBold() { pre(); s ~= "'''"; }
