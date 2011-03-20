@@ -10,6 +10,7 @@ struct BlockAttr
 	int listLevel;
 	int fontSize;
 	int fontColor;
+	int tabCount;
 
 	string toString()
 	{
@@ -20,6 +21,7 @@ struct BlockAttr
 		if (listLevel) attrs ~= format("listLevel=%d", listLevel);
 		if (fontSize) attrs ~= format("fontSize=%d", fontSize);
 		if (fontColor) attrs ~= format("fontColor=%d", fontColor);
+		if (tabCount) attrs ~= format("tabCount=%d", tabCount);
 		return "[" ~ join(attrs, " ") ~ "]";
 	}
 }

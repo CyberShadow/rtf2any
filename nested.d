@@ -21,6 +21,9 @@ class NestedFormatter
 		FontColor0,
 		// ...
 		FontColorMax = FontColor0 + 0x1000000,
+		TabCount0,
+		// ...
+		TabCountMax = TabCount0 + 100,
 	}
 
 	Block[] blocks;
@@ -38,8 +41,8 @@ class NestedFormatter
 			list ~= cast(FormatChange)(FormatChange.ListLevel0 + i);
 		if (attr.fontSize)
 			list ~= cast(FormatChange)(FormatChange.FontSize0 + attr.fontSize);
-		if (attr.fontColor)
-			list ~= cast(FormatChange)(FormatChange.FontColor0 + attr.fontColor);
+		if (attr.tabCount)
+			list ~= cast(FormatChange)(FormatChange.TabCount0 + attr.tabCount);
 		if (attr.bold)
 			list ~= FormatChange.Bold;
 		if (attr.italic)
@@ -75,6 +78,7 @@ class NestedFormatter
 	void addListLevel(int level) {}
 	void addFontSize(int size) {}
 	void addFontColor(int color) {}
+	void addTabCount(int tabCount) {}
 	
 	void removeBold() {}
 	void removeItalic() {}
@@ -82,51 +86,58 @@ class NestedFormatter
 	void removeListLevel(int level) {}
 	void removeFontSize(int size) {}
 	void removeFontColor(int color) {}
+	void removeTabCount(int tabCount) {}
 
 	final void addFormat(FormatChange f)
 	{
-	    if (f == FormatChange.Bold)
-	    	addBold();
-	    else
-	    if (f == FormatChange.Italic)
-	    	addItalic();
-	    else
-	    if (f == FormatChange.Underline)
-	    	addUnderline();
-	    else
-	    if (f >= FormatChange.ListLevel0 && f <= FormatChange.ListLevelMax)
-	    	addListLevel(f - FormatChange.ListLevel0);
-	    else
-	    if (f >= FormatChange.FontSize0 && f <= FormatChange.FontSizeMax)
-	    	addFontSize(f - FormatChange.FontSize0);
-	    else
-	    if (f >= FormatChange.FontColor0 && f <= FormatChange.FontColorMax)
-	    	addFontColor(f - FormatChange.FontColor0);
-	    else
-	    	assert(0);
+		if (f == FormatChange.Bold)
+			addBold();
+		else
+		if (f == FormatChange.Italic)
+			addItalic();
+		else
+		if (f == FormatChange.Underline)
+			addUnderline();
+		else
+		if (f >= FormatChange.ListLevel0 && f <= FormatChange.ListLevelMax)
+			addListLevel(f - FormatChange.ListLevel0);
+		else
+		if (f >= FormatChange.FontSize0 && f <= FormatChange.FontSizeMax)
+			addFontSize(f - FormatChange.FontSize0);
+		else
+		if (f >= FormatChange.FontColor0 && f <= FormatChange.FontColorMax)
+			addFontColor(f - FormatChange.FontColor0);
+		else
+		if (f >= FormatChange.TabCount0 && f <= FormatChange.TabCountMax)
+			addTabCount(f - FormatChange.TabCount0);
+		else
+			assert(0);
 	}
 	
 	final void removeFormat(FormatChange f)
 	{
-	    if (f == FormatChange.Bold)
-	    	removeBold();
-	    else
-	    if (f == FormatChange.Italic)
-	    	removeItalic();
-	    else
-	    if (f == FormatChange.Underline)
-	    	removeUnderline();
-	    else
-	    if (f >= FormatChange.ListLevel0 && f <= FormatChange.ListLevelMax)
-	    	removeListLevel(f - FormatChange.ListLevel0);
-	    else
-	    if (f >= FormatChange.FontSize0 && f <= FormatChange.FontSizeMax)
-	    	removeFontSize(f - FormatChange.FontSize0);
-	    else
-	    if (f >= FormatChange.FontColor0 && f <= FormatChange.FontColorMax)
-	    	removeFontColor(f - FormatChange.FontColor0);
-	    else
-	    	assert(0);
+		if (f == FormatChange.Bold)
+			removeBold();
+		else
+		if (f == FormatChange.Italic)
+			removeItalic();
+		else
+		if (f == FormatChange.Underline)
+			removeUnderline();
+		else
+		if (f >= FormatChange.ListLevel0 && f <= FormatChange.ListLevelMax)
+			removeListLevel(f - FormatChange.ListLevel0);
+		else
+		if (f >= FormatChange.FontSize0 && f <= FormatChange.FontSizeMax)
+			removeFontSize(f - FormatChange.FontSize0);
+		else
+		if (f >= FormatChange.FontColor0 && f <= FormatChange.FontColorMax)
+			removeFontColor(f - FormatChange.FontColor0);
+		else
+		if (f >= FormatChange.TabCount0 && f <= FormatChange.TabCountMax)
+			removeTabCount(f - FormatChange.TabCount0);
+		else
+			assert(0);
 	}
 
 	string format()
@@ -205,6 +216,9 @@ class NestedFormatter
 				else
 				if (f >= FormatChange.FontColor0 && f <= FormatChange.FontColorMax)
 					attrs ~= .format("Font color #%06x", cast(int)(f - FormatChange.FontColor0));
+				else
+				if (f >= FormatChange.TabCount0 && f <= FormatChange.TabCountMax)
+					attrs ~= .format("Tab count %d", cast(int)(f - FormatChange.TabCount0));
 				else
 					assert(0);
 			string text;

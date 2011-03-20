@@ -270,6 +270,7 @@ struct Parser
 					break;
 				case "pard":
 					attr.listLevel = initAttr.listLevel;
+					attr.tabCount = initAttr.tabCount;
 					break;
 				case "cf":
 					attr.fontColor = colors[e.word.num];
@@ -292,6 +293,8 @@ struct Parser
 				case "ulnone":
 					attr.underline = false;
 					break;
+				case "tx":
+					attr.tabCount++;
 				default:
 					break;
 				}
