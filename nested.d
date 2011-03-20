@@ -39,10 +39,10 @@ class NestedFormatter
 		FormatChange[] list;
 		for (int i=1; i<=attr.listLevel; i++)
 			list ~= cast(FormatChange)(FormatChange.ListLevel0 + i);
-		if (attr.fontSize)
-			list ~= cast(FormatChange)(FormatChange.FontSize0 + attr.fontSize);
 		if (attr.tabCount)
 			list ~= cast(FormatChange)(FormatChange.TabCount0 + attr.tabCount);
+		if (attr.fontSize)
+			list ~= cast(FormatChange)(FormatChange.FontSize0 + attr.fontSize);
 		if (attr.bold)
 			list ~= FormatChange.Bold;
 		if (attr.italic)

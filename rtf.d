@@ -262,7 +262,9 @@ struct Parser
 				case "rdblquote": blocks ~= Block(BlockType.Text, attr, "\&rdquo;"); break;
 				case "par":
 					BlockAttr parAttr;
-					parAttr.listLevel = attr.listLevel; // discard all attributes except list level for endlines
+					// discard almost all attributes for endlines
+					parAttr.listLevel = attr.listLevel;
+					parAttr.tabCount = attr.tabCount;
 					blocks ~= Block(BlockType.NewParagraph, parAttr);
 					break;
 				case "page":
