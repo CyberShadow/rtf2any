@@ -313,6 +313,7 @@ struct Parser
 					break;
 				case "tx":
 					attr.tabCount++;
+					break;
 				default:
 					break;
 				}
