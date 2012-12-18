@@ -38,7 +38,7 @@ class MediaWikiFormatter : NestedFormatter
 	override void addListLevel(int level) { listLevel = level; bulletPending = true; }
 	override void addFontSize(int size) { pre(); if (size > 25 && paraStart) s ~= "== "; else if (size > 20 && paraStart) s ~= "=== "; else if (size < 20) s ~= "<small>"; }
 	override void addFontColor(int color) { pre(); s ~= .format(`<span style="color: #%06x">`, color); }
-	override void addTabCount(int tabCount) { inTable = true; s ~= "{|\n| "; }
+	override void addTabCount(int tabCount) { if (listLevel==0) { inTable = true; s ~= "{|\n| "; } }
 	
 	override void removeBold() { s ~= "'''"; }
 	override void removeItalic() { s ~= "''"; }
@@ -46,6 +46,6 @@ class MediaWikiFormatter : NestedFormatter
 	override void removeListLevel(int level) { listLevel = level-1; }
 	override void removeFontSize(int size) { if (size > 25 && paraEnd) s ~= " =="; else if (size > 20 && paraEnd) s ~= " ==="; else if (size < 20) s ~= "</small>"; }
 	override void removeFontColor(int color) { s ~= "</span>"; }
-	override void removeTabCount(int tabCount) { inTable = false; s = s[0..$-5] ~ "|}\n"; }
+	override void removeTabCount(int tabCount) { if (inTable) { inTable = false; s = s[0..$-5] ~ "|}\n"; } }
 }
 
