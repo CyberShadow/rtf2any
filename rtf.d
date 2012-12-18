@@ -273,6 +273,7 @@ struct Parser
 				case "rquote"   : preAppend(); blocks ~= Block(BlockType.Text, attr, "\&rsquo;"); break;
 				case "ldblquote": preAppend(); blocks ~= Block(BlockType.Text, attr, "\&ldquo;"); break;
 				case "rdblquote": preAppend(); blocks ~= Block(BlockType.Text, attr, "\&rdquo;"); break;
+				case "~"        : preAppend(); blocks ~= Block(BlockType.Text, attr, "\&nbsp;" ); break;
 				case "par":
 					preAppend();
 					BlockAttr parAttr;
