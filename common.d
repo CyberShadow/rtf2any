@@ -34,7 +34,7 @@ struct Block
 
 	string toString()
 	{
-		string s = attr.toString;
+		string s = attr.toString();
 		final switch (type)
 		{
 		case BlockType.Text:

@@ -11,10 +11,10 @@ struct ControlWord
 	int _num;
 	bool haveNum;
 
-	int num() { assert(haveNum); return _num; }
-	void num(int value) { haveNum = true; _num = value; }
+	@property int num() { assert(haveNum); return _num; }
+	@property void num(int value) { haveNum = true; _num = value; }
 
-	bool flag()
+	@property bool flag()
 	{
 		if (haveNum)
 		{
