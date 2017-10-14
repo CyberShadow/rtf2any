@@ -400,8 +400,10 @@ struct Parser
 					// no-op without \widowctrl or \widctlpar
 					break;
 				case "qc":
+					attr.center = true;
+					break;
 				case "qj":
-					// TODO: centered
+					attr.center = false;
 					break;
 				case "super":
 				case "nosupersub":

@@ -12,6 +12,7 @@ class NestedFormatter
 		Bold,
 		Italic,
 		Underline,
+		Center,
 		ListLevel0,
 		// ...
 		ListLevelMax = ListLevel0 + 10,
@@ -56,6 +57,8 @@ class NestedFormatter
 			list ~= FormatChange.Italic;
 		if (attr.underline)
 			list ~= FormatChange.Underline;
+		if (attr.center)
+			list ~= FormatChange.Center;
 		return list;
 	}
 
@@ -82,6 +85,7 @@ class NestedFormatter
 	void addBold() {}
 	void addItalic() {}
 	void addUnderline() {}
+	void addCenter() {}
 	void addListLevel(int level) {}
 	void addFont(Font* font) {}
 	void addFontSize(int size) {}
@@ -91,6 +95,7 @@ class NestedFormatter
 	void removeBold() {}
 	void removeItalic() {}
 	void removeUnderline() {}
+	void removeCenter() {}
 	void removeListLevel(int level) {}
 	void removeFont(Font* font) {}
 	void removeFontSize(int size) {}
@@ -109,6 +114,9 @@ class NestedFormatter
 		else
 		if (f == FormatChange.Underline)
 			addUnderline();
+		else
+		if (f == FormatChange.Center)
+			addCenter();
 		else
 		if (f >= FormatChange.ListLevel0 && f <= FormatChange.ListLevelMax)
 			addListLevel(f - FormatChange.ListLevel0);
@@ -138,6 +146,9 @@ class NestedFormatter
 		else
 		if (f == FormatChange.Underline)
 			removeUnderline();
+		else
+		if (f == FormatChange.Center)
+			removeCenter();
 		else
 		if (f >= FormatChange.ListLevel0 && f <= FormatChange.ListLevelMax)
 			removeListLevel(f - FormatChange.ListLevel0);
@@ -227,6 +238,9 @@ class NestedFormatter
 				else
 				if (f == FormatChange.Underline)
 					attrs ~= "Underline";
+				else
+				if (f == FormatChange.Center)
+					attrs ~= "Center";
 				else
 				if (f >= FormatChange.ListLevel0 && f <= FormatChange.ListLevelMax)
 					attrs ~= .format("List level %d", cast(int)(f - FormatChange.ListLevel0));

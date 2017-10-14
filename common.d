@@ -19,7 +19,7 @@ struct Font
 
 struct BlockAttr
 {
-	bool bold, italic, underline;
+	bool bold, italic, underline, center;
 	int listLevel;
 	int fontSize;
 	int fontColor;
@@ -32,6 +32,7 @@ struct BlockAttr
 		if (bold) attrs ~= "bold";
 		if (italic) attrs ~= "italic";
 		if (underline) attrs ~= "underline";
+		if (center) attrs ~= "center";
 		if (listLevel) attrs ~= format("listLevel=%d", listLevel);
 		if (fontSize) attrs ~= format("fontSize=%d", fontSize);
 		if (fontColor) attrs ~= format("fontColor=%d", fontColor);
