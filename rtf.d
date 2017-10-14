@@ -1,6 +1,7 @@
 module rtf2any.rtf;
 
 import std.conv;
+import std.string;
 import std.utf;
 
 import rtf2any.common;
@@ -36,6 +37,19 @@ struct Element
 		ControlWord word;
 		Element[] group;
 		string text;
+	}
+
+	string toString()
+	{
+		final switch (type)
+		{
+			case ElementType.Text:
+				return format("%(%s%)", [text]);
+			case ElementType.ControlWord:
+				return word.text;
+			case ElementType.Group:
+				return group.text;
+		}
 	}
 }
 
