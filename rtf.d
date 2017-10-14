@@ -185,6 +185,7 @@ struct Parser
 	Block[] blocks;
 
 	int[] colors;
+	Font[int] fonts;
 
 	void parse(Element[] elements, BlockAttr initAttr)
 	{
@@ -194,6 +195,46 @@ struct Parser
 			switch (elements[0].word.word)
 			{
 			case "fonttbl":
+				fonts = null;
+				foreach (ref e; elements[1..$])
+				{
+					enforce(e.type == ElementType.Group, "Group expected as fonttbl child");
+					Font font;
+
+					foreach (i, ref f; e.group)
+					{
+						final switch (f.type)
+						{
+							case ElementType.Text:
+								enforce(f.text.endsWith(";"), "Expected ';' fonttbl entry terminator");
+								enforce(i+1 == e.group.length, "';' terminator not at the end");
+								font.name = f.text[0..$-1];
+								break;
+							case ElementType.ControlWord:
+								switch (f.word.word)
+								{
+								case "f":
+									font.index = f.word.num;
+									break;
+								case "fprq":
+									font.pitch = f.word.num;
+									break;
+								case "fcharset":
+									font.charset = f.word.num;
+									break;
+								default:
+									enforce(f.word.word.startsWith("f"), "Unknown font property");
+									font.family = f.word.word[1..$];
+								}
+								break;
+							case ElementType.Group:
+								/// fallbacks - discard
+								break;
+						}
+					}
+
+					fonts[font.index] = font;
+				}
 				return;
 			case "colortbl":
 				int color = 0;
@@ -305,6 +346,9 @@ struct Parser
 				case "pard":
 					attr.listLevel = initAttr.listLevel;
 					attr.tabCount = initAttr.tabCount;
+					break;
+				case "f":
+					attr.font = &fonts[e.word.num];
 					break;
 				case "cf":
 					attr.fontColor = colors[e.word.num];

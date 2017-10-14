@@ -15,6 +15,9 @@ class NestedFormatter
 		ListLevel0,
 		// ...
 		ListLevelMax = ListLevel0 + 10,
+		Font0,
+		// ...
+		FontMax = Font0 + 100,
 		FontSize0,
 		// ...
 		FontSizeMax = FontSize0 + 1000,
@@ -41,6 +44,8 @@ class NestedFormatter
 			list ~= cast(FormatChange)(FormatChange.ListLevel0 + i);
 		if (attr.tabCount)
 			list ~= cast(FormatChange)(FormatChange.TabCount0 + attr.tabCount);
+		if (attr.font)
+			list ~= cast(FormatChange)(FormatChange.Font0 + attr.font.index);
 		if (attr.fontSize)
 			list ~= cast(FormatChange)(FormatChange.FontSize0 + attr.fontSize);
 		if (attr.fontColor)
@@ -78,6 +83,7 @@ class NestedFormatter
 	void addItalic() {}
 	void addUnderline() {}
 	void addListLevel(int level) {}
+	void addFont(Font* font) {}
 	void addFontSize(int size) {}
 	void addFontColor(int color) {}
 	void addTabCount(int tabCount) {}
@@ -86,13 +92,14 @@ class NestedFormatter
 	void removeItalic() {}
 	void removeUnderline() {}
 	void removeListLevel(int level) {}
+	void removeFont(Font* font) {}
 	void removeFontSize(int size) {}
 	void removeFontColor(int color) {}
 	void removeTabCount(int tabCount) {}
 
 	void flush() {}
 
-	final void addFormat(FormatChange f)
+	final void addFormat(FormatChange f, ref Block block)
 	{
 		if (f == FormatChange.Bold)
 			addBold();
@@ -106,6 +113,9 @@ class NestedFormatter
 		if (f >= FormatChange.ListLevel0 && f <= FormatChange.ListLevelMax)
 			addListLevel(f - FormatChange.ListLevel0);
 		else
+		if (f >= FormatChange.Font0 && f <= FormatChange.FontMax)
+			addFont(block.attr.font);
+		else
 		if (f >= FormatChange.FontSize0 && f <= FormatChange.FontSizeMax)
 			addFontSize(f - FormatChange.FontSize0);
 		else
@@ -118,7 +128,7 @@ class NestedFormatter
 			assert(0);
 	}
 	
-	final void removeFormat(FormatChange f)
+	final void removeFormat(FormatChange f, ref Block block)
 	{
 		if (f == FormatChange.Bold)
 			removeBold();
@@ -131,6 +141,9 @@ class NestedFormatter
 		else
 		if (f >= FormatChange.ListLevel0 && f <= FormatChange.ListLevelMax)
 			removeListLevel(f - FormatChange.ListLevel0);
+		else
+		if (f >= FormatChange.Font0 && f <= FormatChange.FontMax)
+			removeFont(block.attr.font);
 		else
 		if (f >= FormatChange.FontSize0 && f <= FormatChange.FontSizeMax)
 			removeFontSize(f - FormatChange.FontSize0);
@@ -160,7 +173,7 @@ class NestedFormatter
 				{
 					// unwind stack
 					foreach_reverse(rf; stack[i..$])
-						removeFormat(rf);
+						removeFormat(rf, blocks[bi-1]);
 					stack = stack[0..i];
 					break;
 				}
@@ -170,7 +183,7 @@ class NestedFormatter
 				if (!haveFormat(stack, f))
 				{
 					stack ~= f;
-					addFormat(f);
+					addFormat(f, block);
 				}
 
 			switch (block.type)
@@ -192,7 +205,7 @@ class NestedFormatter
 		// close remaining tags
 		blockIndex = blocks.length;
 		foreach_reverse(rf; stack)
-			removeFormat(rf);
+			removeFormat(rf, blocks[$-1]);
 
 		flush();
 
@@ -217,6 +230,9 @@ class NestedFormatter
 				else
 				if (f >= FormatChange.ListLevel0 && f <= FormatChange.ListLevelMax)
 					attrs ~= .format("List level %d", cast(int)(f - FormatChange.ListLevel0));
+				else
+				if (f >= FormatChange.Font0 && f <= FormatChange.FontMax)
+					attrs ~= .format("Font %s", block.attr.font);
 				else
 				if (f >= FormatChange.FontSize0 && f <= FormatChange.FontSizeMax)
 					attrs ~= .format("Font size %d", cast(int)(f - FormatChange.FontSize0));

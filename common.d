@@ -4,6 +4,19 @@ import std.string;
 
 enum BlockType { Text, NewParagraph, PageBreak }
 
+struct Font
+{
+	int index;
+
+	/// nil/swiss/modern/roman/...
+	/// See https://msdn.microsoft.com/en-us/library/windows/desktop/dd144832(v=vs.85).aspx
+	string family;
+
+	string name;
+	int pitch; /// fprq
+	int charset;
+}
+
 struct BlockAttr
 {
 	bool bold, italic, underline;
@@ -11,6 +24,7 @@ struct BlockAttr
 	int fontSize;
 	int fontColor;
 	int tabCount;
+	Font* font;
 
 	string toString()
 	{
