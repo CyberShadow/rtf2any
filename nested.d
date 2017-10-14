@@ -147,6 +147,7 @@ class NestedFormatter
 	string format()
 	{
 		FormatChange[] stack;
+		s = null;
 
 		foreach (bi, ref block; blocks)
 		{
@@ -247,4 +248,3 @@ class NestedFormatter
 		return s;
 	}
 }
-
