@@ -374,8 +374,32 @@ struct Parser
 				case "tx":
 					attr.tabCount++;
 					break;
-				default:
+				case "rtf":
+				case "ansi":
+				case "ansicpg":
+				case "deff":
+				case "deflang":
+				case "deflangfe":
+				case "viewkind":
+				case "uc":
+				case "nowidctlpar":
+				case "qc":
+				case "super":
+				case "nosupersub":
+				case "*":
+				case "pn":
+				case "pnlvlblt":
+				case "pnf":
+				case "pnindent":
+				case "fi":
+				case "qj":
+				case "bullet":
+				case "lang":
+				case "ri":
+					// TODO
 					break;
+				default:
+					throw new Exception("Unknown XML control word: " ~ e.word.word);
 				}
 				break;
 			}
