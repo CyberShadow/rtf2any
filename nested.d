@@ -27,7 +27,7 @@ class NestedFormatter
 	}
 
 	Block[] blocks;
-	int blockIndex;
+	size_t blockIndex;
 
 	this(Block[] blocks)
 	{
