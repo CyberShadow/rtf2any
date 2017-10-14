@@ -17,9 +17,12 @@ struct Font
 	int charset;
 }
 
+enum SubSuper { none, subscript, superscript }
+
 struct BlockAttr
 {
 	bool bold, italic, underline, center;
+	SubSuper subSuper;
 	int listLevel;
 	int fontSize;
 	int fontColor;
@@ -33,6 +36,7 @@ struct BlockAttr
 		if (italic) attrs ~= "italic";
 		if (underline) attrs ~= "underline";
 		if (center) attrs ~= "center";
+		if (subSuper) attrs ~= format("%s", subSuper);
 		if (listLevel) attrs ~= format("listLevel=%d", listLevel);
 		if (fontSize) attrs ~= format("fontSize=%d", fontSize);
 		if (fontColor) attrs ~= format("fontColor=%d", fontColor);

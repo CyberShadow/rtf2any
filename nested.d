@@ -13,6 +13,8 @@ class NestedFormatter
 		Italic,
 		Underline,
 		Center,
+		SubScript,
+		SuperScript,
 		ListLevel0,
 		// ...
 		ListLevelMax = ListLevel0 + 10,
@@ -59,6 +61,10 @@ class NestedFormatter
 			list ~= FormatChange.Underline;
 		if (attr.center)
 			list ~= FormatChange.Center;
+		if (attr.subSuper == SubSuper.subscript)
+			list ~= FormatChange.SubScript;
+		if (attr.subSuper == SubSuper.superscript)
+			list ~= FormatChange.SuperScript;
 		return list;
 	}
 
@@ -86,6 +92,7 @@ class NestedFormatter
 	void addItalic() {}
 	void addUnderline() {}
 	void addCenter() {}
+	void addSubSuper(SubSuper subSuper) {}
 	void addListLevel(int level) {}
 	void addFont(Font* font) {}
 	void addFontSize(int size) {}
@@ -96,6 +103,7 @@ class NestedFormatter
 	void removeItalic() {}
 	void removeUnderline() {}
 	void removeCenter() {}
+	void removeSubSuper(SubSuper subSuper) {}
 	void removeListLevel(int level) {}
 	void removeFont(Font* font) {}
 	void removeFontSize(int size) {}
@@ -117,6 +125,12 @@ class NestedFormatter
 		else
 		if (f == FormatChange.Center)
 			addCenter();
+		else
+		if (f == FormatChange.SubScript)
+			addSubSuper(SubSuper.subscript);
+		else
+		if (f == FormatChange.SuperScript)
+			addSubSuper(SubSuper.superscript);
 		else
 		if (f >= FormatChange.ListLevel0 && f <= FormatChange.ListLevelMax)
 			addListLevel(f - FormatChange.ListLevel0);
@@ -149,6 +163,12 @@ class NestedFormatter
 		else
 		if (f == FormatChange.Center)
 			removeCenter();
+		else
+		if (f == FormatChange.SubScript)
+			removeSubSuper(SubSuper.subscript);
+		else
+		if (f == FormatChange.SuperScript)
+			removeSubSuper(SubSuper.superscript);
 		else
 		if (f >= FormatChange.ListLevel0 && f <= FormatChange.ListLevelMax)
 			removeListLevel(f - FormatChange.ListLevel0);
@@ -241,6 +261,12 @@ class NestedFormatter
 				else
 				if (f == FormatChange.Center)
 					attrs ~= "Center";
+				else
+				if (f == FormatChange.SubScript)
+					attrs ~= "SubScript";
+				else
+				if (f == FormatChange.SuperScript)
+					attrs ~= "SuperScript";
 				else
 				if (f >= FormatChange.ListLevel0 && f <= FormatChange.ListLevelMax)
 					attrs ~= .format("List level %d", cast(int)(f - FormatChange.ListLevel0));

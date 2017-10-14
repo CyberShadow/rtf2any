@@ -405,9 +405,14 @@ struct Parser
 				case "qj":
 					attr.center = false;
 					break;
+				case "sub":
+					attr.subSuper = SubSuper.subscript;
+					break;
 				case "super":
+					attr.subSuper = SubSuper.superscript;
+					break;
 				case "nosupersub":
-					// TODO: superscript
+					attr.subSuper = SubSuper.none;
 					break;
 				case "*":
 				case "pn":
