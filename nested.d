@@ -90,6 +90,8 @@ class NestedFormatter
 	void removeFontColor(int color) {}
 	void removeTabCount(int tabCount) {}
 
+	void flush() {}
+
 	final void addFormat(FormatChange f)
 	{
 		if (f == FormatChange.Bold)
@@ -190,6 +192,8 @@ class NestedFormatter
 		blockIndex = blocks.length;
 		foreach_reverse(rf; stack)
 			removeFormat(rf);
+
+		flush();
 
 		return s;
 	}
