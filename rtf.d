@@ -187,7 +187,7 @@ struct Parser
 	int[] colors;
 	Font[int] fonts;
 
-	void parse(Element[] elements, BlockAttr initAttr)
+	void parse(Element[] elements, BlockAttr initAttr, Element[] stack)
 	{
 		BlockAttr attr = initAttr;
 		// Parse special control words at the beginning of groups
@@ -300,7 +300,7 @@ struct Parser
 			case ElementType.Group:
 				if (e.type == ElementType.Group && e.group[0].word.word == "pntext")
 					sawBullet = true;
-				parse(e.group, attr);
+				parse(e.group, attr, stack ~ e);
 				break;
 			case ElementType.ControlWord:
 				switch (e.word.word)
@@ -322,14 +322,15 @@ struct Parser
 					preAppend();
 					blocks ~= Block(BlockType.Text, attr, e.word.word);
 					break;
-				case "tab"      : preAppend(); blocks ~= Block(BlockType.Text, attr, "\t"      ); break;
-				case "emdash"   : preAppend(); blocks ~= Block(BlockType.Text, attr, "\&mdash;"); break;
-				case "endash"   : preAppend(); blocks ~= Block(BlockType.Text, attr, "\&ndash;"); break;
-				case "lquote"   : preAppend(); blocks ~= Block(BlockType.Text, attr, "\&lsquo;"); break;
-				case "rquote"   : preAppend(); blocks ~= Block(BlockType.Text, attr, "\&rsquo;"); break;
-				case "ldblquote": preAppend(); blocks ~= Block(BlockType.Text, attr, "\&ldquo;"); break;
-				case "rdblquote": preAppend(); blocks ~= Block(BlockType.Text, attr, "\&rdquo;"); break;
-				case "~"        : preAppend(); blocks ~= Block(BlockType.Text, attr, "\&nbsp;" ); break;
+				case "tab"      : preAppend(); blocks ~= Block(BlockType.Text, attr, "\t"       ); break;
+				case "emdash"   : preAppend(); blocks ~= Block(BlockType.Text, attr, "\&mdash;" ); break;
+				case "endash"   : preAppend(); blocks ~= Block(BlockType.Text, attr, "\&ndash;" ); break;
+				case "lquote"   : preAppend(); blocks ~= Block(BlockType.Text, attr, "\&lsquo;" ); break;
+				case "rquote"   : preAppend(); blocks ~= Block(BlockType.Text, attr, "\&rsquo;" ); break;
+				case "ldblquote": preAppend(); blocks ~= Block(BlockType.Text, attr, "\&ldquo;" ); break;
+				case "rdblquote": preAppend(); blocks ~= Block(BlockType.Text, attr, "\&rdquo;" ); break;
+				case "bullet"   : preAppend(); blocks ~= Block(BlockType.Text, attr, "\&bullet;"); break;
+				case "~"        : preAppend(); blocks ~= Block(BlockType.Text, attr, "\&nbsp;"  ); break;
 				case "par":
 					preAppend();
 					BlockAttr parAttr;
@@ -356,6 +357,9 @@ struct Parser
 				case "fs":
 					attr.fontSize = e.word.num;
 					break;
+				case "fi":
+					// TODO - see if this allows getting rid of the hack below
+					break;
 				case "li":
 					attr.listLevel = ((e.word.num) + /*180*/360) / 360; // HACK: W:A-readme-specific
 					break;
@@ -375,28 +379,46 @@ struct Parser
 					attr.tabCount++;
 					break;
 				case "rtf":
+					enforce(stack.length == 0 && i == 0, "rtf control word not at document start");
+					break;
 				case "ansi":
+					break;
 				case "ansicpg":
+					enforce(e.word.num == 1252, "Unsupported codepage");
+					break;
 				case "deff":
+					enforce(e.word.num == 0, "Unsupported default font");
+					break;
 				case "deflang":
 				case "deflangfe":
 				case "viewkind":
+					break;
 				case "uc":
+					enforce(e.word.num == 1, "Unsupported Unicode substitution character count");
+					break;
 				case "nowidctlpar":
+					// no-op without \widowctrl or \widctlpar
+					break;
 				case "qc":
+				case "qj":
+					// TODO: centered
+					break;
 				case "super":
 				case "nosupersub":
+					// TODO: superscript
+					break;
 				case "*":
 				case "pn":
 				case "pnlvlblt":
 				case "pnf":
 				case "pnindent":
-				case "fi":
-				case "qj":
-				case "bullet":
+					// Bullet list backwards compatibility
+					break;
 				case "lang":
+					// Semantic-only?
+					break;
 				case "ri":
-					// TODO
+					// Right-align - unsupported
 					break;
 				default:
 					throw new Exception("Unknown XML control word: " ~ e.word.word);
@@ -409,7 +431,7 @@ struct Parser
 	Block[] parse()
 	{
 		BlockAttr attr; // default attributes
-		parse(elements, attr);
+		parse(elements, attr, null);
 		return blocks;
 	}
 }
