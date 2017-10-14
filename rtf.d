@@ -1,6 +1,7 @@
 module rtf2any.rtf;
 
 import std.conv;
+import std.exception;
 import std.string;
 import std.utf;
 
@@ -200,13 +201,13 @@ struct Parser
 				{
 					if (e.type == ElementType.Text)
 					{
-						assert(e.text == ";");
+						enforce(e.text == ";", "Expected ';' colortbl terminator");
 						colors ~= color;
 						color = 0;
 					}
 					else
 					{
-						assert(e.type == ElementType.ControlWord);
+						enforce(e.type == ElementType.ControlWord, "Unexpected token type");
 						switch(e.word.word)
 						{
 						case "red":
@@ -219,7 +220,7 @@ struct Parser
 							color |= e.word.num;
 							break;
 						default:
-							assert(0);
+							enforce(false, "Unknown color channel");
 						}
 					}
 				}
@@ -249,7 +250,7 @@ struct Parser
 					attr.listLevel = 0;
 			}
 
-			switch (e.type)
+			final switch (e.type)
 			{
 			case ElementType.Text:
 				preAppend();
@@ -265,13 +266,13 @@ struct Parser
 				{
 				case "'":
 					// Replace the hex characters from next text block
-					assert(i+1 < elements.length && elements[i+1].type == ElementType.Text && elements[i+1].text.length >= 2);
+					enforce(i+1 < elements.length && elements[i+1].type == ElementType.Text && elements[i+1].text.length >= 2, "Text block for hex escape expected");
 					elements[i+1].text = toUTF8([cast(dchar)windows1252[fromHex(elements[i+1].text[0..2])]]) ~ elements[i+1].text[2..$];
 					break;
 				case "u":
 					// Replace fallback question mark in next text block
-					assert(i+1 < elements.length && elements[i+1].type == ElementType.Text && elements[i+1].text.length >= 1);
-					assert(elements[i+1].text[0] == '?');
+					enforce(i+1 < elements.length && elements[i+1].type == ElementType.Text && elements[i+1].text.length >= 1, "Text block for Unicode expected");
+					enforce(elements[i+1].text[0] == '?', "Question mark in Unicode expected");
 					elements[i+1].text = toUTF8([cast(dchar)e.word.num]) ~ elements[i+1].text[1..$];
 					break;
 				case "\\":
@@ -333,8 +334,6 @@ struct Parser
 					break;
 				}
 				break;
-			default:
-				assert(0);
 			}
 		}
 	}
@@ -371,7 +370,7 @@ private uint fromHex(string s)
 			case 'd': case 'D': d = 13; break;
 			case 'e': case 'E': d = 14; break;
 			case 'f': case 'F': d = 15; break;
-			default: assert(0);
+			default: enforce(false, "Unknown hex digit");
 		}
 		s = s[1..$];
 		n = (n << 4) + d;
