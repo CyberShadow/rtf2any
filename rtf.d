@@ -333,10 +333,11 @@ struct Parser
 				case "~"        : preAppend(); blocks ~= Block(BlockType.Text, attr, "\&nbsp;"  ); break;
 				case "par":
 					preAppend();
-					BlockAttr parAttr;
-					// discard almost all attributes for endlines
-					parAttr.listLevel = attr.listLevel;
-					parAttr.tabCount = attr.tabCount;
+					BlockAttr parAttr = attr;
+					// discard some attributes for endlines
+					parAttr.bold = parAttr.italic = parAttr.underline = parAttr.center = false;
+					parAttr.subSuper = SubSuper.none;
+					parAttr.fontColor = 0;
 					blocks ~= Block(BlockType.NewParagraph, parAttr);
 					sawBullet = false;
 					break;
