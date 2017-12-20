@@ -348,6 +348,7 @@ struct Parser
 				case "pard":
 					attr.listLevel = initAttr.listLevel;
 					attr.tabCount = initAttr.tabCount;
+					attr.center = false;
 					break;
 				case "f":
 					attr.font = &fonts[e.word.num];
