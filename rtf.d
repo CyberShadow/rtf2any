@@ -335,7 +335,7 @@ struct Parser
 					preAppend();
 					BlockAttr parAttr = attr;
 					// discard some attributes for endlines
-					parAttr.bold = parAttr.italic = parAttr.underline = parAttr.center = false;
+					parAttr.bold = parAttr.italic = parAttr.underline = false;
 					parAttr.subSuper = SubSuper.none;
 					parAttr.fontColor = 0;
 					blocks ~= Block(BlockType.NewParagraph, parAttr);
