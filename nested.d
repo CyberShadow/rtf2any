@@ -15,7 +15,9 @@ class NestedFormatter
 		Center,
 		SubScript,
 		SuperScript,
-		InParagraph,
+		Paragraph0,
+		// ...
+		ParagraphMax = Paragraph0 + 100000,
 		ListLevel0,
 		// ...
 		ListLevelMax = ListLevel0 + 10,
@@ -50,8 +52,8 @@ class NestedFormatter
 			list ~= cast(FormatChange)(FormatChange.TabCount0 + attr.tabCount);
 		if (attr.center)
 			list ~= FormatChange.Center;
-		if (attr.inParagraph)
-			list ~= FormatChange.InParagraph;
+		if (attr.paragraphIndex >= 0)
+			list ~= cast(FormatChange)(FormatChange.Paragraph0 + attr.paragraphIndex);
 		if (attr.font)
 			list ~= cast(FormatChange)(FormatChange.Font0 + attr.font.index);
 		if (attr.fontSize)
@@ -101,7 +103,7 @@ class NestedFormatter
 	void addFontSize(int size) {}
 	void addFontColor(int color) {}
 	void addTabCount(int tabCount) {}
-	void addInParagraph() {}
+	void addInParagraph(int index) {}
 	
 	void removeBold() {}
 	void removeItalic() {}
@@ -113,7 +115,7 @@ class NestedFormatter
 	void removeFontSize(int size) {}
 	void removeFontColor(int color) {}
 	void removeTabCount(int tabCount) {}
-	void removeInParagraph() {}
+	void removeInParagraph(int index) {}
 
 	void flush() {}
 
@@ -130,9 +132,6 @@ class NestedFormatter
 		else
 		if (f == FormatChange.Center)
 			addCenter();
-		else
-		if (f == FormatChange.InParagraph)
-			addInParagraph();
 		else
 		if (f == FormatChange.SubScript)
 			addSubSuper(SubSuper.subscript);
@@ -155,6 +154,9 @@ class NestedFormatter
 		if (f >= FormatChange.TabCount0 && f <= FormatChange.TabCountMax)
 			addTabCount(f - FormatChange.TabCount0);
 		else
+		if (f >= FormatChange.Paragraph0 && f <= FormatChange.ParagraphMax)
+			addInParagraph(f - FormatChange.Paragraph0);
+		else
 			assert(0);
 	}
 	
@@ -171,9 +173,6 @@ class NestedFormatter
 		else
 		if (f == FormatChange.Center)
 			removeCenter();
-		else
-		if (f == FormatChange.InParagraph)
-			removeInParagraph();
 		else
 		if (f == FormatChange.SubScript)
 			removeSubSuper(SubSuper.subscript);
@@ -195,6 +194,9 @@ class NestedFormatter
 		else
 		if (f >= FormatChange.TabCount0 && f <= FormatChange.TabCountMax)
 			removeTabCount(f - FormatChange.TabCount0);
+		else
+		if (f >= FormatChange.Paragraph0 && f <= FormatChange.ParagraphMax)
+			removeInParagraph(f - FormatChange.Paragraph0);
 		else
 			assert(0);
 	}
@@ -273,9 +275,6 @@ class NestedFormatter
 				if (f == FormatChange.Center)
 					attrs ~= "Center";
 				else
-				if (f == FormatChange.InParagraph)
-					attrs ~= "InParagraph";
-				else
 				if (f == FormatChange.SubScript)
 					attrs ~= "SubScript";
 				else
@@ -296,6 +295,9 @@ class NestedFormatter
 				else
 				if (f >= FormatChange.TabCount0 && f <= FormatChange.TabCountMax)
 					attrs ~= .format("Tab count %d", cast(int)(f - FormatChange.TabCount0));
+				else
+				if (f >= FormatChange.Paragraph0 && f <= FormatChange.ParagraphMax)
+					attrs ~= .format("Paragraph %d", cast(int)(f - FormatChange.Paragraph0));
 				else
 					assert(0);
 			string text;

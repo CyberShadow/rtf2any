@@ -22,12 +22,12 @@ enum SubSuper { none, subscript, superscript }
 struct BlockAttr
 {
 	bool bold, italic, underline, center;
-	bool inParagraph = true;
 	SubSuper subSuper;
 	int listLevel;
 	int fontSize;
 	int fontColor;
 	int tabCount;
+	int paragraphIndex;
 	Font* font;
 
 	string toString()
@@ -37,12 +37,12 @@ struct BlockAttr
 		if (italic) attrs ~= "italic";
 		if (underline) attrs ~= "underline";
 		if (center) attrs ~= "center";
-		if (!inParagraph) attrs ~= "par";
 		if (subSuper) attrs ~= format("%s", subSuper);
 		if (listLevel) attrs ~= format("listLevel=%d", listLevel);
 		if (fontSize) attrs ~= format("fontSize=%d", fontSize);
 		if (fontColor) attrs ~= format("fontColor=%d", fontColor);
 		if (tabCount) attrs ~= format("tabCount=%d", tabCount);
+		if (paragraphIndex >= 0) attrs ~= format("paragraphIndex=%d", paragraphIndex);
 		return "[" ~ join(attrs, " ") ~ "]";
 	}
 }
