@@ -52,14 +52,14 @@ class NestedFormatter
 			list ~= cast(FormatChange)(FormatChange.TabCount0 + attr.tabCount);
 		if (attr.center)
 			list ~= FormatChange.Center;
-		if (attr.paragraphIndex >= 0)
-			list ~= cast(FormatChange)(FormatChange.Paragraph0 + attr.paragraphIndex);
 		if (attr.font)
 			list ~= cast(FormatChange)(FormatChange.Font0 + attr.font.index);
 		if (attr.fontSize)
 			list ~= cast(FormatChange)(FormatChange.FontSize0 + attr.fontSize);
 		if (attr.fontColor)
 			list ~= cast(FormatChange)(FormatChange.FontColor0 + attr.fontColor);
+		if (attr.paragraphIndex >= 0)
+			list ~= cast(FormatChange)(FormatChange.Paragraph0 + attr.paragraphIndex);
 		if (attr.bold)
 			list ~= FormatChange.Bold;
 		if (attr.italic)
@@ -201,6 +201,14 @@ class NestedFormatter
 			assert(0);
 	}
 
+	final bool canSplitFormat(FormatChange f)
+	{
+		if (f >= FormatChange.Paragraph0 && f <= FormatChange.ParagraphMax)
+			return false;
+		else
+			return true;
+	}
+
 	string format()
 	{
 		FormatChange[] stack;
@@ -212,17 +220,43 @@ class NestedFormatter
 
 			FormatChange[] newList = attrToChanges(block.attr);
 
+			// Gracious unwind (popping things off the top of the stack)
+			while (stack.length && !haveFormat(newList, stack[$-1]))
+			{
+				removeFormat(stack[$-1], blocks[bi-1]);
+				stack = stack[0..$-1];
+			}
+
+			// Brutal unwind (popping things out from the middle of the stack)
 			foreach (i, f; stack)
 				if (!haveFormat(newList, f))
 				{
-					// unwind stack
-					foreach_reverse(rf; stack[i..$])
-						removeFormat(rf, blocks[bi-1]);
-					stack = stack[0..i];
-					break;
+					bool canSplit = true;
+					foreach (rf; stack[i+1..$])
+						if (!canSplitFormat(rf))
+						{
+							canSplit = false;
+							break;
+						}
+
+					if (canSplit)
+					{
+						// Unwind stack to remove all formats no
+						// longer present, and everything that came on
+						// top of them in the stack.
+						foreach_reverse (rf; stack[i..$])
+							removeFormat(rf, blocks[bi-1]);
+						stack = stack[0..i];
+						break;
+					}
+					else
+					{
+						// Just let the new format to be added to the
+						// top of the stack, overriding the old one.
+					}
 				}
 
-			// add new and unwound formatters
+			// Add new and re-add unwound formatters.
 			foreach (f; newList)
 				if (!haveFormat(stack, f))
 				{
