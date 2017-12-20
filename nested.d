@@ -1,5 +1,6 @@
 module rtf2any.nested;
 
+import std.exception;
 import std.string;
 import rtf2any.common;
 
@@ -15,7 +16,6 @@ class NestedFormatter
 		Center,
 		SubScript,
 		SuperScript,
-		InParagraph,
 		ListLevel0,
 		// ...
 		ListLevelMax = ListLevel0 + 10,
@@ -50,8 +50,6 @@ class NestedFormatter
 			list ~= cast(FormatChange)(FormatChange.TabCount0 + attr.tabCount);
 		if (attr.center)
 			list ~= FormatChange.Center;
-		if (attr.inParagraph)
-			list ~= FormatChange.InParagraph;
 		if (attr.font)
 			list ~= cast(FormatChange)(FormatChange.Font0 + attr.font.index);
 		if (attr.fontSize)
@@ -131,9 +129,6 @@ class NestedFormatter
 		if (f == FormatChange.Center)
 			addCenter();
 		else
-		if (f == FormatChange.InParagraph)
-			addInParagraph();
-		else
 		if (f == FormatChange.SubScript)
 			addSubSuper(SubSuper.subscript);
 		else
@@ -172,9 +167,6 @@ class NestedFormatter
 		if (f == FormatChange.Center)
 			removeCenter();
 		else
-		if (f == FormatChange.InParagraph)
-			removeInParagraph();
-		else
 		if (f == FormatChange.SubScript)
 			removeSubSuper(SubSuper.subscript);
 		else
@@ -201,53 +193,74 @@ class NestedFormatter
 
 	string format()
 	{
-		FormatChange[] stack;
+		Block[][] paragraphs = [null];
+
+		foreach (ref block; blocks)
+		{
+			if (block.type == BlockType.NewParagraph)
+				paragraphs ~= null;
+			else
+				paragraphs[$-1] ~= block;
+		}
+		enforce(paragraphs[$-1] is null, "Trailing data on last paragraph");
+		paragraphs = paragraphs[0..$-1];
+
+		blockIndex = 0;
 		s = null;
 
-		foreach (bi, ref block; blocks)
+		foreach (paragraph; paragraphs)
 		{
-			blockIndex = bi;
+			addInParagraph();
 
-			FormatChange[] newList = attrToChanges(block.attr);
+			FormatChange[] stack;
 
-			foreach (i, f; stack)
-				if (!haveFormat(newList, f))
-				{
-					// unwind stack
-					foreach_reverse(rf; stack[i..$])
-						removeFormat(rf, blocks[bi-1]);
-					stack = stack[0..i];
-					break;
-				}
-
-			// add new and unwound formatters
-			foreach (f; newList)
-				if (!haveFormat(stack, f))
-				{
-					stack ~= f;
-					addFormat(f, block);
-				}
-
-			switch (block.type)
+			foreach (bi, ref block; paragraph)
 			{
-				case BlockType.Text:
-					addText(block.text);
-					break;
-				case BlockType.NewParagraph:
-					newParagraph();
-					break;
-				case BlockType.PageBreak:
-					newPage();
-					break;
-				default:
-					assert(0);
-			}
-		}
+				FormatChange[] newList = attrToChanges(block.attr);
 
-		// close remaining tags
-		blockIndex = blocks.length;
-		foreach_reverse(rf; stack)
-			removeFormat(rf, blocks[$-1]);
+				foreach (i, f; stack)
+					if (!haveFormat(newList, f))
+					{
+						// unwind stack
+						foreach_reverse(rf; stack[i..$])
+							removeFormat(rf, paragraph[bi-1]);
+						stack = stack[0..i];
+						break;
+					}
+
+				// add new and unwound formatters
+				foreach (f; newList)
+					if (!haveFormat(stack, f))
+					{
+						stack ~= f;
+						addFormat(f, block);
+					}
+
+				switch (block.type)
+				{
+					case BlockType.Text:
+						addText(block.text);
+						break;
+					case BlockType.NewParagraph:
+						assert(false);
+					case BlockType.PageBreak:
+						newPage();
+						break;
+					default:
+						assert(0);
+				}
+
+				blockIndex++;
+			}
+
+			// close remaining tags
+			foreach_reverse(rf; stack)
+				removeFormat(rf, paragraph[$-1]);
+
+			removeInParagraph();
+			newParagraph();
+			blockIndex++;
+		}
 
 		flush();
 
@@ -272,9 +285,6 @@ class NestedFormatter
 				else
 				if (f == FormatChange.Center)
 					attrs ~= "Center";
-				else
-				if (f == FormatChange.InParagraph)
-					attrs ~= "InParagraph";
 				else
 				if (f == FormatChange.SubScript)
 					attrs ~= "SubScript";

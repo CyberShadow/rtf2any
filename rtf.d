@@ -338,7 +338,6 @@ struct Parser
 					parAttr.bold = parAttr.italic = parAttr.underline = false;
 					parAttr.subSuper = SubSuper.none;
 					parAttr.fontColor = 0;
-					parAttr.inParagraph = false;
 					blocks ~= Block(BlockType.NewParagraph, parAttr);
 					sawBullet = false;
 					break;
