@@ -18,6 +18,9 @@ class NestedFormatter
 		Paragraph0,
 		// ...
 		ParagraphMax = Paragraph0 + 100000,
+		Column0,
+		// ...
+		ColumnMax = Column0 + 1000,
 		ListLevel0,
 		// ...
 		ListLevelMax = ListLevel0 + 10,
@@ -60,6 +63,8 @@ class NestedFormatter
 			list ~= cast(FormatChange)(FormatChange.FontColor0 + attr.fontColor);
 		if (attr.paragraphIndex >= 0)
 			list ~= cast(FormatChange)(FormatChange.Paragraph0 + attr.paragraphIndex);
+		if (attr.columnIndex >= 0)
+			list ~= cast(FormatChange)(FormatChange.Column0 + attr.columnIndex);
 		if (attr.bold)
 			list ~= FormatChange.Bold;
 		if (attr.italic)
@@ -104,6 +109,7 @@ class NestedFormatter
 	void addFontColor(int color) {}
 	void addTabCount(int tabCount) {}
 	void addInParagraph(int index) {}
+	void addInColumn(int index) {}
 	
 	void removeBold() {}
 	void removeItalic() {}
@@ -116,6 +122,7 @@ class NestedFormatter
 	void removeFontColor(int color) {}
 	void removeTabCount(int tabCount) {}
 	void removeInParagraph(int index) {}
+	void removeInColumn(int index) {}
 
 	void flush() {}
 
@@ -156,6 +163,9 @@ class NestedFormatter
 		else
 		if (f >= FormatChange.Paragraph0 && f <= FormatChange.ParagraphMax)
 			addInParagraph(f - FormatChange.Paragraph0);
+		else
+		if (f >= FormatChange.Column0 && f <= FormatChange.ColumnMax)
+			addInColumn(f - FormatChange.Column0);
 		else
 			assert(0);
 	}
@@ -198,12 +208,18 @@ class NestedFormatter
 		if (f >= FormatChange.Paragraph0 && f <= FormatChange.ParagraphMax)
 			removeInParagraph(f - FormatChange.Paragraph0);
 		else
+		if (f >= FormatChange.Column0 && f <= FormatChange.ColumnMax)
+			removeInColumn(f - FormatChange.Column0);
+		else
 			assert(0);
 	}
 
 	final bool canSplitFormat(FormatChange f)
 	{
 		if (f >= FormatChange.Paragraph0 && f <= FormatChange.ParagraphMax)
+			return false;
+		else
+		if (f >= FormatChange.Column0 && f <= FormatChange.ColumnMax)
 			return false;
 		else
 			return true;
@@ -292,6 +308,8 @@ class NestedFormatter
 					break;
 				case BlockType.NewParagraph:
 					newParagraph();
+					break;
+				case BlockType.Tab:
 					break;
 				case BlockType.PageBreak:
 					newPage();

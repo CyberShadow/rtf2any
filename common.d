@@ -2,7 +2,20 @@ module rtf2any.common;
 
 import std.string;
 
-enum BlockType { Text, NewParagraph, PageBreak }
+enum BlockType
+{
+	/// Unicode text. See "text" field.
+	Text,
+
+	/// \par
+	NewParagraph,
+
+	/// \tab
+	Tab,
+
+	/// \page
+	PageBreak
+}
 
 struct Font
 {
@@ -27,7 +40,7 @@ struct BlockAttr
 	int fontSize;
 	int fontColor;
 	int tabCount;
-	int paragraphIndex;
+	int paragraphIndex, columnIndex;
 	Font* font;
 
 	string toString()
@@ -43,6 +56,7 @@ struct BlockAttr
 		if (fontColor) attrs ~= format("fontColor=%d", fontColor);
 		if (tabCount) attrs ~= format("tabCount=%d", tabCount);
 		if (paragraphIndex >= 0) attrs ~= format("paragraphIndex=%d", paragraphIndex);
+		if (columnIndex >= 0) attrs ~= format("columnIndex=%d", columnIndex);
 		return "[" ~ join(attrs, " ") ~ "]";
 	}
 }
@@ -62,6 +76,8 @@ struct Block
 			return s ~ ` Text: ` ~ text;
 		case BlockType.NewParagraph:
 			return s ~ ` NewParagraph`;
+		case BlockType.Tab:
+			return s ~ ` Tab`;
 		case BlockType.PageBreak:
 			return s ~ ` PageBreak`;
 		}

@@ -322,7 +322,6 @@ struct Parser
 					preAppend();
 					blocks ~= Block(BlockType.Text, attr, e.word.word);
 					break;
-				case "tab"      : preAppend(); blocks ~= Block(BlockType.Text, attr, "\t"       ); break;
 				case "emdash"   : preAppend(); blocks ~= Block(BlockType.Text, attr, "\&mdash;" ); break;
 				case "endash"   : preAppend(); blocks ~= Block(BlockType.Text, attr, "\&ndash;" ); break;
 				case "lquote"   : preAppend(); blocks ~= Block(BlockType.Text, attr, "\&lsquo;" ); break;
@@ -331,6 +330,12 @@ struct Parser
 				case "rdblquote": preAppend(); blocks ~= Block(BlockType.Text, attr, "\&rdquo;" ); break;
 				case "bullet"   : preAppend(); blocks ~= Block(BlockType.Text, attr, "\&bullet;"); break;
 				case "~"        : preAppend(); blocks ~= Block(BlockType.Text, attr, "\&nbsp;"  ); break;
+				case "tab":
+					preAppend();
+					BlockAttr tabAttr = attr;
+					blocks ~= Block(BlockType.Tab, tabAttr);
+					attr.columnIndex++;
+					break;
 				case "par":
 					preAppend();
 					BlockAttr parAttr = attr;
@@ -338,9 +343,11 @@ struct Parser
 					parAttr.bold = parAttr.italic = parAttr.underline = false;
 					parAttr.subSuper = SubSuper.none;
 					parAttr.fontColor = 0;
+					parAttr.columnIndex = -1;
 					blocks ~= Block(BlockType.NewParagraph, parAttr);
-					sawBullet = false;
 					attr.paragraphIndex++;
+					attr.columnIndex = 0;
+					sawBullet = false;
 					break;
 				case "page":
 					preAppend();
