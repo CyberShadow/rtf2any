@@ -197,10 +197,9 @@ class NestedFormatter
 
 		foreach (ref block; blocks)
 		{
+			paragraphs[$-1] ~= block;
 			if (block.type == BlockType.NewParagraph)
 				paragraphs ~= null;
-			else
-				paragraphs[$-1] ~= block;
 		}
 		enforce(paragraphs[$-1] is null, "Trailing data on last paragraph");
 		paragraphs = paragraphs[0..$-1];
@@ -242,7 +241,7 @@ class NestedFormatter
 						addText(block.text);
 						break;
 					case BlockType.NewParagraph:
-						assert(false);
+						break;
 					case BlockType.PageBreak:
 						newPage();
 						break;
@@ -259,7 +258,6 @@ class NestedFormatter
 
 			removeInParagraph();
 			newParagraph();
-			blockIndex++;
 		}
 
 		flush();
