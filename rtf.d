@@ -449,6 +449,25 @@ struct Parser
 	{
 		BlockAttr attr; // default attributes
 		parse(elements, attr, null);
+
+		/// Unmark columns in paragraphs that do not have tabs.
+		{
+			size_t parStart = 0;
+			bool sawTab = false;
+			foreach (bi, ref block; blocks)
+				if (block.type == BlockType.Tab)
+					sawTab = true;
+				else
+				if (block.type == BlockType.NewParagraph)
+				{
+					if (!sawTab)
+						foreach (ref b; blocks[parStart..bi])
+							b.attr.columnIndex = -1;
+					sawTab = false;
+					parStart = bi + 1;
+				}
+		}
+
 		return blocks;
 	}
 }
