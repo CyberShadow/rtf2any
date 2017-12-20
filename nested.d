@@ -15,6 +15,7 @@ class NestedFormatter
 		Center,
 		SubScript,
 		SuperScript,
+		InParagraph,
 		ListLevel0,
 		// ...
 		ListLevelMax = ListLevel0 + 10,
@@ -49,6 +50,8 @@ class NestedFormatter
 			list ~= cast(FormatChange)(FormatChange.TabCount0 + attr.tabCount);
 		if (attr.center)
 			list ~= FormatChange.Center;
+		if (attr.inParagraph)
+			list ~= FormatChange.InParagraph;
 		if (attr.font)
 			list ~= cast(FormatChange)(FormatChange.Font0 + attr.font.index);
 		if (attr.fontSize)
@@ -98,6 +101,7 @@ class NestedFormatter
 	void addFontSize(int size) {}
 	void addFontColor(int color) {}
 	void addTabCount(int tabCount) {}
+	void addInParagraph() {}
 	
 	void removeBold() {}
 	void removeItalic() {}
@@ -109,6 +113,7 @@ class NestedFormatter
 	void removeFontSize(int size) {}
 	void removeFontColor(int color) {}
 	void removeTabCount(int tabCount) {}
+	void removeInParagraph() {}
 
 	void flush() {}
 
@@ -125,6 +130,9 @@ class NestedFormatter
 		else
 		if (f == FormatChange.Center)
 			addCenter();
+		else
+		if (f == FormatChange.InParagraph)
+			addInParagraph();
 		else
 		if (f == FormatChange.SubScript)
 			addSubSuper(SubSuper.subscript);
@@ -163,6 +171,9 @@ class NestedFormatter
 		else
 		if (f == FormatChange.Center)
 			removeCenter();
+		else
+		if (f == FormatChange.InParagraph)
+			removeInParagraph();
 		else
 		if (f == FormatChange.SubScript)
 			removeSubSuper(SubSuper.subscript);
@@ -261,6 +272,9 @@ class NestedFormatter
 				else
 				if (f == FormatChange.Center)
 					attrs ~= "Center";
+				else
+				if (f == FormatChange.InParagraph)
+					attrs ~= "InParagraph";
 				else
 				if (f == FormatChange.SubScript)
 					attrs ~= "SubScript";
