@@ -49,16 +49,16 @@ class NestedFormatter
 	static FormatChange[] attrToChanges(BlockAttr attr)
 	{
 		FormatChange[] list;
+		if (attr.font)
+			list ~= cast(FormatChange)(FormatChange.Font0 + attr.font.index);
+		if (attr.fontSize)
+			list ~= cast(FormatChange)(FormatChange.FontSize0 + attr.fontSize);
 		for (int i=1; i<=attr.listLevel; i++)
 			list ~= cast(FormatChange)(FormatChange.ListLevel0 + i);
 		if (attr.tabCount)
 			list ~= cast(FormatChange)(FormatChange.TabCount0 + attr.tabCount);
 		if (attr.center)
 			list ~= FormatChange.Center;
-		if (attr.font)
-			list ~= cast(FormatChange)(FormatChange.Font0 + attr.font.index);
-		if (attr.fontSize)
-			list ~= cast(FormatChange)(FormatChange.FontSize0 + attr.fontSize);
 		if (attr.fontColor)
 			list ~= cast(FormatChange)(FormatChange.FontColor0 + attr.fontColor);
 		if (attr.paragraphIndex >= 0)
