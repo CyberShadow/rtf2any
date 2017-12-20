@@ -214,6 +214,27 @@ class NestedFormatter
 		FormatChange[] stack;
 		s = null;
 
+		// Duplicate the properties of a paragraph's delimiter to its
+		// beginning as a fake text node, so that the list->tree
+		// algorithm below promotes properties (e.g. font size) which
+		// correspond to the paragraph delimiter.
+		{
+			BlockAttr* paragraphAttr;
+			foreach_reverse (bi, ref block; blocks)
+				if (block.type == BlockType.NewParagraph)
+				{
+					if (paragraphAttr)
+					{
+						Block start;
+						start.type = BlockType.Text;
+						start.text = null;
+						start.attr = *paragraphAttr;
+						blocks = blocks[0..bi+1] ~ start ~ blocks[bi+1..$];
+					}
+					paragraphAttr = &block.attr;
+				}
+		}
+
 		foreach (bi, ref block; blocks)
 		{
 			blockIndex = bi;
