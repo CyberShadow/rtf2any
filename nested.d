@@ -47,6 +47,8 @@ class NestedFormatter
 			list ~= cast(FormatChange)(FormatChange.ListLevel0 + i);
 		if (attr.tabCount)
 			list ~= cast(FormatChange)(FormatChange.TabCount0 + attr.tabCount);
+		if (attr.center)
+			list ~= FormatChange.Center;
 		if (attr.font)
 			list ~= cast(FormatChange)(FormatChange.Font0 + attr.font.index);
 		if (attr.fontSize)
@@ -59,8 +61,6 @@ class NestedFormatter
 			list ~= FormatChange.Italic;
 		if (attr.underline)
 			list ~= FormatChange.Underline;
-		if (attr.center)
-			list ~= FormatChange.Center;
 		if (attr.subSuper == SubSuper.subscript)
 			list ~= FormatChange.SubScript;
 		if (attr.subSuper == SubSuper.superscript)
