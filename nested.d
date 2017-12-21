@@ -1,5 +1,6 @@
 module rtf2any.nested;
 
+import std.conv;
 import std.string;
 import rtf2any.common;
 
@@ -7,7 +8,7 @@ class NestedFormatter
 {
 	string s;
 
-	enum FormatChange : uint
+	enum FormatChange : ulong
 	{
 		Bold,
 		Italic,
@@ -33,9 +34,9 @@ class NestedFormatter
 		FontColor0,
 		// ...
 		FontColorMax = FontColor0 + 0x1000000,
-		TabCount0,
+		Tabs0,
 		// ...
-		TabCountMax = TabCount0 + 100,
+		TabsMax = Tabs0 + 0x1_0000_0000,
 	}
 
 	Block[] blocks;
@@ -55,8 +56,8 @@ class NestedFormatter
 			list ~= cast(FormatChange)(FormatChange.FontSize0 + attr.fontSize);
 		for (int i=1; i<=attr.listLevel; i++)
 			list ~= cast(FormatChange)(FormatChange.ListLevel0 + i);
-		if (attr.tabCount)
-			list ~= cast(FormatChange)(FormatChange.TabCount0 + attr.tabCount);
+		if (attr.tabs.length)
+			list ~= cast(FormatChange)(FormatChange.Tabs0 + (hashOf(attr.tabs, 0) & 0xFFFF_FFFF));
 		if (attr.center)
 			list ~= FormatChange.Center;
 		if (attr.fontColor)
@@ -107,7 +108,7 @@ class NestedFormatter
 	void addFont(Font* font) {}
 	void addFontSize(int size) {}
 	void addFontColor(int color) {}
-	void addTabCount(int tabCount) {}
+	void addTabs(int[] tabs) {}
 	void addInParagraph(int index) {}
 	void addInColumn(int index) {}
 	
@@ -120,7 +121,7 @@ class NestedFormatter
 	void removeFont(Font* font) {}
 	void removeFontSize(int size) {}
 	void removeFontColor(int color) {}
-	void removeTabCount(int tabCount) {}
+	void removeTabs(int[] tabs) {}
 	void removeInParagraph(int index) {}
 	void removeInColumn(int index) {}
 
@@ -147,25 +148,25 @@ class NestedFormatter
 			addSubSuper(SubSuper.superscript);
 		else
 		if (f >= FormatChange.ListLevel0 && f <= FormatChange.ListLevelMax)
-			addListLevel(f - FormatChange.ListLevel0);
+			addListLevel(to!int(f - FormatChange.ListLevel0));
 		else
 		if (f >= FormatChange.Font0 && f <= FormatChange.FontMax)
 			addFont(block.attr.font);
 		else
 		if (f >= FormatChange.FontSize0 && f <= FormatChange.FontSizeMax)
-			addFontSize(f - FormatChange.FontSize0);
+			addFontSize(to!int(f - FormatChange.FontSize0));
 		else
 		if (f >= FormatChange.FontColor0 && f <= FormatChange.FontColorMax)
-			addFontColor(f - FormatChange.FontColor0);
+			addFontColor(to!int(f - FormatChange.FontColor0));
 		else
-		if (f >= FormatChange.TabCount0 && f <= FormatChange.TabCountMax)
-			addTabCount(f - FormatChange.TabCount0);
+		if (f >= FormatChange.Tabs0 && f <= FormatChange.TabsMax)
+			addTabs(block.attr.tabs);
 		else
 		if (f >= FormatChange.Paragraph0 && f <= FormatChange.ParagraphMax)
-			addInParagraph(f - FormatChange.Paragraph0);
+			addInParagraph(to!int(f - FormatChange.Paragraph0));
 		else
 		if (f >= FormatChange.Column0 && f <= FormatChange.ColumnMax)
-			addInColumn(f - FormatChange.Column0);
+			addInColumn(to!int(f - FormatChange.Column0));
 		else
 			assert(0);
 	}
@@ -191,25 +192,25 @@ class NestedFormatter
 			removeSubSuper(SubSuper.superscript);
 		else
 		if (f >= FormatChange.ListLevel0 && f <= FormatChange.ListLevelMax)
-			removeListLevel(f - FormatChange.ListLevel0);
+			removeListLevel(to!int(f - FormatChange.ListLevel0));
 		else
 		if (f >= FormatChange.Font0 && f <= FormatChange.FontMax)
 			removeFont(block.attr.font);
 		else
 		if (f >= FormatChange.FontSize0 && f <= FormatChange.FontSizeMax)
-			removeFontSize(f - FormatChange.FontSize0);
+			removeFontSize(to!int(f - FormatChange.FontSize0));
 		else
 		if (f >= FormatChange.FontColor0 && f <= FormatChange.FontColorMax)
-			removeFontColor(f - FormatChange.FontColor0);
+			removeFontColor(to!int(f - FormatChange.FontColor0));
 		else
-		if (f >= FormatChange.TabCount0 && f <= FormatChange.TabCountMax)
-			removeTabCount(f - FormatChange.TabCount0);
+		if (f >= FormatChange.Tabs0 && f <= FormatChange.TabsMax)
+			removeTabs(block.attr.tabs);
 		else
 		if (f >= FormatChange.Paragraph0 && f <= FormatChange.ParagraphMax)
-			removeInParagraph(f - FormatChange.Paragraph0);
+			removeInParagraph(to!int(f - FormatChange.Paragraph0));
 		else
 		if (f >= FormatChange.Column0 && f <= FormatChange.ColumnMax)
-			removeInColumn(f - FormatChange.Column0);
+			removeInColumn(to!int(f - FormatChange.Column0));
 		else
 			assert(0);
 	}
@@ -366,8 +367,8 @@ class NestedFormatter
 				if (f >= FormatChange.FontColor0 && f <= FormatChange.FontColorMax)
 					attrs ~= .format("Font color #%06x", cast(int)(f - FormatChange.FontColor0));
 				else
-				if (f >= FormatChange.TabCount0 && f <= FormatChange.TabCountMax)
-					attrs ~= .format("Tab count %d", cast(int)(f - FormatChange.TabCount0));
+				if (f >= FormatChange.Tabs0 && f <= FormatChange.TabsMax)
+					attrs ~= .format("Tab count %d", cast(int)(f - FormatChange.Tabs0));
 				else
 				if (f >= FormatChange.Paragraph0 && f <= FormatChange.ParagraphMax)
 					attrs ~= .format("Paragraph %d", cast(int)(f - FormatChange.Paragraph0));

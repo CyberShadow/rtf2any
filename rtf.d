@@ -355,7 +355,7 @@ struct Parser
 					break;
 				case "pard":
 					attr.listLevel = initAttr.listLevel;
-					attr.tabCount = initAttr.tabCount;
+					attr.tabs = initAttr.tabs;
 					attr.center = false;
 					break;
 				case "f":
@@ -386,7 +386,7 @@ struct Parser
 					attr.underline = false;
 					break;
 				case "tx":
-					attr.tabCount++;
+					attr.tabs ~= e.word.num;
 					break;
 				case "rtf":
 					enforce(stack.length == 0 && i == 0, "rtf control word not at document start");

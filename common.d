@@ -39,7 +39,7 @@ struct BlockAttr
 	int listLevel;
 	int fontSize;
 	int fontColor;
-	int tabCount;
+	int[] tabs;
 	int paragraphIndex, columnIndex;
 	Font* font;
 
@@ -54,7 +54,7 @@ struct BlockAttr
 		if (listLevel) attrs ~= format("listLevel=%d", listLevel);
 		if (fontSize) attrs ~= format("fontSize=%d", fontSize);
 		if (fontColor) attrs ~= format("fontColor=%d", fontColor);
-		if (tabCount) attrs ~= format("tabCount=%d", tabCount);
+		foreach (tab; tabs) attrs ~= format("tab=%d", tab);
 		if (paragraphIndex >= 0) attrs ~= format("paragraphIndex=%d", paragraphIndex);
 		if (columnIndex >= 0) attrs ~= format("columnIndex=%d", columnIndex);
 		return "[" ~ join(attrs, " ") ~ "]";
