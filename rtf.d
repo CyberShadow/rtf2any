@@ -283,7 +283,6 @@ struct Parser
 			default:
 			}
 
-		bool sawBullet;
 		foreach (i, ref e; elements)
 		{
 			void preAppend()
@@ -298,10 +297,7 @@ struct Parser
 				break;
 			case ElementType.Group:
 				if (e.type == ElementType.Group && e.group[0].word.word == "pntext")
-				{
-					blocks ~= Block(BlockType.Bullet, attr);
-					sawBullet = true;
-				}
+					attr.list = true;
 				parse(e.group, attr, stack ~ e);
 				break;
 			case ElementType.ControlWord:
@@ -349,7 +345,7 @@ struct Parser
 					blocks ~= Block(BlockType.NewParagraph, parAttr);
 					attr.paragraphIndex++;
 					attr.columnIndex = 0;
-					sawBullet = false;
+					attr.list = false;
 					break;
 				case "page":
 					preAppend();

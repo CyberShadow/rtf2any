@@ -115,7 +115,7 @@ class NestedFormatter
 	void addFontSize(int size) {}
 	void addFontColor(int color) {}
 	void addTabs(int[] tabs) {}
-	void addInParagraph(int index) {}
+	void addInParagraph(int index, bool list) {}
 	void addInColumn(int index) {}
 	
 	void removeBold() {}
@@ -128,12 +128,12 @@ class NestedFormatter
 	void removeFontSize(int size) {}
 	void removeFontColor(int color) {}
 	void removeTabs(int[] tabs) {}
-	void removeInParagraph(int index) {}
+	void removeInParagraph(int index, bool list) {}
 	void removeInColumn(int index) {}
 
 	void flush() {}
 
-	final void addFormat(Format f)
+	final void addFormat(Format f, ref Block block)
 	{
 		final switch (f.type)
 		{
@@ -171,7 +171,7 @@ class NestedFormatter
 				addTabs(f.tabs);
 				break;
 			case Format.Type.paragraph:
-				addInParagraph(f.value);
+				addInParagraph(f.value, block.attr.list);
 				break;
 			case Format.Type.column:
 				addInColumn(f.value);
@@ -217,7 +217,7 @@ class NestedFormatter
 				removeTabs(f.tabs);
 				break;
 			case Format.Type.paragraph:
-				removeInParagraph(f.value);
+				removeInParagraph(f.value, block.attr.list);
 				break;
 			case Format.Type.column:
 				removeInColumn(f.value);
@@ -310,16 +310,13 @@ class NestedFormatter
 				if (!haveFormat(stack, f))
 				{
 					stack ~= f;
-					addFormat(f);
+					addFormat(f, block);
 				}
 
 			final switch (block.type)
 			{
 				case BlockType.Text:
 					addText(block.text);
-					break;
-				case BlockType.Bullet:
-					addBullet();
 					break;
 				case BlockType.NewParagraph:
 					newParagraph();
