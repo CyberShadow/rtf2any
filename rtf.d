@@ -200,6 +200,7 @@ struct Parser
 				{
 					enforce(e.type == ElementType.Group, "Group expected as fonttbl child");
 					Font font;
+					int fontIndex;
 
 					foreach (i, ref f; e.group)
 					{
@@ -214,7 +215,7 @@ struct Parser
 								switch (f.word.word)
 								{
 								case "f":
-									font.index = f.word.num;
+									fontIndex = f.word.num;
 									break;
 								case "fprq":
 									font.pitch = f.word.num;
@@ -233,7 +234,7 @@ struct Parser
 						}
 					}
 
-					fonts[font.index] = font;
+					fonts[fontIndex] = font;
 				}
 				return;
 			case "colortbl":

@@ -19,8 +19,6 @@ enum BlockType
 
 struct Font
 {
-	int index;
-
 	/// nil/swiss/modern/roman/...
 	/// See https://msdn.microsoft.com/en-us/library/windows/desktop/dd144832(v=vs.85).aspx
 	string family;

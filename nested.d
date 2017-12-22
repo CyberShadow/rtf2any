@@ -2,41 +2,43 @@ module rtf2any.nested;
 
 import std.conv;
 import std.string;
+
+import ae.utils.meta.args;
+
 import rtf2any.common;
 
 class NestedFormatter
 {
 	string s;
 
-	enum FormatChange : ulong
+	struct Format
 	{
-		Bold,
-		Italic,
-		Underline,
-		Center,
-		SubScript,
-		SuperScript,
-		Paragraph0,
-		// ...
-		ParagraphMax = Paragraph0 + 100000,
-		Column0,
-		// ...
-		ColumnMax = Column0 + 1000,
-		ListLevel0,
-		// ...
-		ListLevelMax = ListLevel0 + 10,
-		Font0,
-		// ...
-		FontMax = Font0 + 100,
-		FontSize0,
-		// ...
-		FontSizeMax = FontSize0 + 1000,
-		FontColor0,
-		// ...
-		FontColorMax = FontColor0 + 0x1000000,
-		Tabs0,
-		// ...
-		TabsMax = Tabs0 + 0x1_0000_0000,
+		enum Type
+		{
+			bold,
+			italic,
+			underline,
+			center,
+			subscript,
+			superscript,
+			paragraph,
+			column,
+			listLevel,
+			font,
+			fontSize,
+			fontColor,
+			tabs,
+		}
+		Type type;
+
+		/// For paragraph, column, listLevel, fontSize, fontColor
+		int value;
+
+		/// For font
+		Font *font;
+
+		/// For tabs
+		int[] tabs;
 	}
 
 	Block[] blocks;
@@ -47,39 +49,39 @@ class NestedFormatter
 		this.blocks = blocks;
 	}
 
-	static FormatChange[] attrToChanges(BlockAttr attr)
+	static Format[] attrToChanges(BlockAttr attr)
 	{
-		FormatChange[] list;
+		Format[] list;
 		if (attr.font)
-			list ~= cast(FormatChange)(FormatChange.Font0 + attr.font.index);
+			list ~= args!(Format, type => Format.Type.font, font => attr.font);
 		if (attr.fontSize)
-			list ~= cast(FormatChange)(FormatChange.FontSize0 + attr.fontSize);
+			list ~= Format(Format.Type.fontSize, attr.fontSize);
 		for (int i=1; i<=attr.listLevel; i++)
-			list ~= cast(FormatChange)(FormatChange.ListLevel0 + i);
+			list ~= Format(Format.Type.listLevel, i);
 		if (attr.tabs.length)
-			list ~= cast(FormatChange)(FormatChange.Tabs0 + (hashOf(attr.tabs, 0) & 0xFFFF_FFFF));
+			list ~= args!(Format, type => Format.Type.tabs, tabs => attr.tabs);
 		if (attr.center)
-			list ~= FormatChange.Center;
+			list ~= Format(Format.Type.center);
 		if (attr.fontColor)
-			list ~= cast(FormatChange)(FormatChange.FontColor0 + attr.fontColor);
+			list ~= Format(Format.Type.fontColor, attr.fontColor);
 		if (attr.paragraphIndex >= 0)
-			list ~= cast(FormatChange)(FormatChange.Paragraph0 + attr.paragraphIndex);
+			list ~= Format(Format.Type.paragraph, attr.paragraphIndex);
 		if (attr.columnIndex >= 0)
-			list ~= cast(FormatChange)(FormatChange.Column0 + attr.columnIndex);
+			list ~= Format(Format.Type.column, attr.columnIndex);
 		if (attr.bold)
-			list ~= FormatChange.Bold;
+			list ~= Format(Format.Type.bold);
 		if (attr.italic)
-			list ~= FormatChange.Italic;
+			list ~= Format(Format.Type.italic);
 		if (attr.underline)
-			list ~= FormatChange.Underline;
+			list ~= Format(Format.Type.underline);
 		if (attr.subSuper == SubSuper.subscript)
-			list ~= FormatChange.SubScript;
+			list ~= Format(Format.Type.subscript);
 		if (attr.subSuper == SubSuper.superscript)
-			list ~= FormatChange.SuperScript;
+			list ~= Format(Format.Type.superscript);
 		return list;
 	}
 
-	static bool haveFormat(FormatChange[] stack, FormatChange format)
+	static bool haveFormat(Format[] stack, Format format)
 	{
 		foreach (f; stack)
 			if (f == format)
@@ -87,14 +89,14 @@ class NestedFormatter
 		return false;
 	}
 
-	static bool haveFormat(FormatChange[] stack, FormatChange min, FormatChange max)
+	static bool haveFormat(Format[] stack, Format.Type formatType)
 	{
 		foreach (f; stack)
-			if (f >= min && f<=max)
+			if (f.type == formatType)
 				return true;
 		return false;
 	}
-	
+
 	abstract void addText(string s);
 	void newParagraph() {}
 	void newPage() {}
@@ -127,108 +129,113 @@ class NestedFormatter
 
 	void flush() {}
 
-	final void addFormat(FormatChange f, ref Block block)
+	final void addFormat(Format f)
 	{
-		if (f == FormatChange.Bold)
-			addBold();
-		else
-		if (f == FormatChange.Italic)
-			addItalic();
-		else
-		if (f == FormatChange.Underline)
-			addUnderline();
-		else
-		if (f == FormatChange.Center)
-			addCenter();
-		else
-		if (f == FormatChange.SubScript)
-			addSubSuper(SubSuper.subscript);
-		else
-		if (f == FormatChange.SuperScript)
-			addSubSuper(SubSuper.superscript);
-		else
-		if (f >= FormatChange.ListLevel0 && f <= FormatChange.ListLevelMax)
-			addListLevel(to!int(f - FormatChange.ListLevel0));
-		else
-		if (f >= FormatChange.Font0 && f <= FormatChange.FontMax)
-			addFont(block.attr.font);
-		else
-		if (f >= FormatChange.FontSize0 && f <= FormatChange.FontSizeMax)
-			addFontSize(to!int(f - FormatChange.FontSize0));
-		else
-		if (f >= FormatChange.FontColor0 && f <= FormatChange.FontColorMax)
-			addFontColor(to!int(f - FormatChange.FontColor0));
-		else
-		if (f >= FormatChange.Tabs0 && f <= FormatChange.TabsMax)
-			addTabs(block.attr.tabs);
-		else
-		if (f >= FormatChange.Paragraph0 && f <= FormatChange.ParagraphMax)
-			addInParagraph(to!int(f - FormatChange.Paragraph0));
-		else
-		if (f >= FormatChange.Column0 && f <= FormatChange.ColumnMax)
-			addInColumn(to!int(f - FormatChange.Column0));
-		else
-			assert(0);
+		final switch (f.type)
+		{
+			case Format.Type.bold:
+				addBold();
+				break;
+			case Format.Type.italic:
+				addItalic();
+				break;
+			case Format.Type.underline:
+				addUnderline();
+				break;
+			case Format.Type.center:
+				addCenter();
+				break;
+			case Format.Type.subscript:
+				addSubSuper(SubSuper.subscript);
+				break;
+			case Format.Type.superscript:
+				addSubSuper(SubSuper.superscript);
+				break;
+			case Format.Type.listLevel:
+				addListLevel(f.value);
+				break;
+			case Format.Type.font:
+				addFont(f.font);
+				break;
+			case Format.Type.fontSize:
+				addFontSize(f.value);
+				break;
+			case Format.Type.fontColor:
+				addFontColor(f.value);
+				break;
+			case Format.Type.tabs:
+				addTabs(f.tabs);
+				break;
+			case Format.Type.paragraph:
+				addInParagraph(f.value);
+				break;
+			case Format.Type.column:
+				addInColumn(f.value);
+				break;
+		}
 	}
 	
-	final void removeFormat(FormatChange f, ref Block block)
+	final void removeFormat(Format f, ref Block block)
 	{
-		if (f == FormatChange.Bold)
-			removeBold();
-		else
-		if (f == FormatChange.Italic)
-			removeItalic();
-		else
-		if (f == FormatChange.Underline)
-			removeUnderline();
-		else
-		if (f == FormatChange.Center)
-			removeCenter();
-		else
-		if (f == FormatChange.SubScript)
-			removeSubSuper(SubSuper.subscript);
-		else
-		if (f == FormatChange.SuperScript)
-			removeSubSuper(SubSuper.superscript);
-		else
-		if (f >= FormatChange.ListLevel0 && f <= FormatChange.ListLevelMax)
-			removeListLevel(to!int(f - FormatChange.ListLevel0));
-		else
-		if (f >= FormatChange.Font0 && f <= FormatChange.FontMax)
-			removeFont(block.attr.font);
-		else
-		if (f >= FormatChange.FontSize0 && f <= FormatChange.FontSizeMax)
-			removeFontSize(to!int(f - FormatChange.FontSize0));
-		else
-		if (f >= FormatChange.FontColor0 && f <= FormatChange.FontColorMax)
-			removeFontColor(to!int(f - FormatChange.FontColor0));
-		else
-		if (f >= FormatChange.Tabs0 && f <= FormatChange.TabsMax)
-			removeTabs(block.attr.tabs);
-		else
-		if (f >= FormatChange.Paragraph0 && f <= FormatChange.ParagraphMax)
-			removeInParagraph(to!int(f - FormatChange.Paragraph0));
-		else
-		if (f >= FormatChange.Column0 && f <= FormatChange.ColumnMax)
-			removeInColumn(to!int(f - FormatChange.Column0));
-		else
-			assert(0);
+		final switch (f.type)
+		{
+			case Format.Type.bold:
+				removeBold();
+				break;
+			case Format.Type.italic:
+				removeItalic();
+				break;
+			case Format.Type.underline:
+				removeUnderline();
+				break;
+			case Format.Type.center:
+				removeCenter();
+				break;
+			case Format.Type.subscript:
+				removeSubSuper(SubSuper.subscript);
+				break;
+			case Format.Type.superscript:
+				removeSubSuper(SubSuper.superscript);
+				break;
+			case Format.Type.listLevel:
+				removeListLevel(f.value);
+				break;
+			case Format.Type.font:
+				removeFont(f.font);
+				break;
+			case Format.Type.fontSize:
+				removeFontSize(f.value);
+				break;
+			case Format.Type.fontColor:
+				removeFontColor(f.value);
+				break;
+			case Format.Type.tabs:
+				removeTabs(f.tabs);
+				break;
+			case Format.Type.paragraph:
+				removeInParagraph(f.value);
+				break;
+			case Format.Type.column:
+				removeInColumn(f.value);
+				break;
+		}
 	}
 
-	final bool canSplitFormat(FormatChange f)
+	final bool canSplitFormat(Format f)
 	{
-		if (f >= FormatChange.Paragraph0 && f <= FormatChange.ParagraphMax)
-			return false;
-		else
-		if (f >= FormatChange.Column0 && f <= FormatChange.ColumnMax)
-			return false;
-		else
-			return true;
+		switch (f.type)
+		{
+			case Format.Type.paragraph:
+			case Format.Type.column:
+				return false;
+			default:
+				return true;
+		}
 	}
 
 	string format()
 	{
-		FormatChange[] stack;
+		Format[] stack;
 		s = null;
 
 		// Duplicate the properties of a paragraph's delimiter to its
@@ -256,7 +263,7 @@ class NestedFormatter
 		{
 			blockIndex = bi;
 
-			FormatChange[] newList = attrToChanges(block.attr);
+			Format[] newList = attrToChanges(block.attr);
 
 			// Gracious unwind (popping things off the top of the stack)
 			while (stack.length && !haveFormat(newList, stack[$-1]))
@@ -299,7 +306,7 @@ class NestedFormatter
 				if (!haveFormat(stack, f))
 				{
 					stack ~= f;
-					addFormat(f, block);
+					addFormat(f);
 				}
 
 			switch (block.type)
@@ -337,43 +344,48 @@ class NestedFormatter
 		{
 			string[] attrs;
 			foreach (f; attrToChanges(block.attr))
-				if (f == FormatChange.Bold)
-					attrs ~= "Bold";
-				else
-				if (f == FormatChange.Italic)
-					attrs ~= "Italic";
-				else
-				if (f == FormatChange.Underline)
-					attrs ~= "Underline";
-				else
-				if (f == FormatChange.Center)
-					attrs ~= "Center";
-				else
-				if (f == FormatChange.SubScript)
-					attrs ~= "SubScript";
-				else
-				if (f == FormatChange.SuperScript)
-					attrs ~= "SuperScript";
-				else
-				if (f >= FormatChange.ListLevel0 && f <= FormatChange.ListLevelMax)
-					attrs ~= .format("List level %d", cast(int)(f - FormatChange.ListLevel0));
-				else
-				if (f >= FormatChange.Font0 && f <= FormatChange.FontMax)
-					attrs ~= .format("Font %s", block.attr.font);
-				else
-				if (f >= FormatChange.FontSize0 && f <= FormatChange.FontSizeMax)
-					attrs ~= .format("Font size %d", cast(int)(f - FormatChange.FontSize0));
-				else
-				if (f >= FormatChange.FontColor0 && f <= FormatChange.FontColorMax)
-					attrs ~= .format("Font color #%06x", cast(int)(f - FormatChange.FontColor0));
-				else
-				if (f >= FormatChange.Tabs0 && f <= FormatChange.TabsMax)
-					attrs ~= .format("Tab count %d", cast(int)(f - FormatChange.Tabs0));
-				else
-				if (f >= FormatChange.Paragraph0 && f <= FormatChange.ParagraphMax)
-					attrs ~= .format("Paragraph %d", cast(int)(f - FormatChange.Paragraph0));
-				else
-					assert(0);
+				final switch (f.type)
+				{
+					case Format.Type.bold:
+						attrs ~= "Bold";
+						break;
+					case Format.Type.italic:
+						attrs ~= "Italic";
+						break;
+					case Format.Type.underline:
+						attrs ~= "Underline";
+						break;
+					case Format.Type.center:
+						attrs ~= "Center";
+						break;
+					case Format.Type.subscript:
+						attrs ~= "SubScript";
+						break;
+					case Format.Type.superscript:
+						attrs ~= "SuperScript";
+						break;
+					case Format.Type.listLevel:
+						attrs ~= .format("List level %d", f.value);
+						break;
+					case Format.Type.font:
+						attrs ~= .format("Font %s", f.font);
+						break;
+					case Format.Type.fontSize:
+						attrs ~= .format("Font size %d", f.value);
+						break;
+					case Format.Type.fontColor:
+						attrs ~= .format("Font color #%06x", f.value);
+						break;
+					case Format.Type.tabs:
+						attrs ~= .format("Tab count %d", f.tabs.length);
+						break;
+					case Format.Type.paragraph:
+						attrs ~= .format("Paragraph %d", f.value);
+						break;
+					case Format.Type.column:
+						attrs ~= .format("Column %d", f.value);
+						break;
+				}
 			string text;
 			switch (block.type)
 			{
