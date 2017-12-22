@@ -7,6 +7,9 @@ enum BlockType
 	/// Unicode text. See "text" field.
 	Text,
 
+	/// List bullet.
+	Bullet,
+
 	/// \par
 	NewParagraph,
 
@@ -34,10 +37,11 @@ struct BlockAttr
 {
 	bool bold, italic, underline, center;
 	SubSuper subSuper;
-	int listLevel;
+	int leftIndent; /// in twips
+	int firstLineIndent; /// relative to leftIndent
 	int fontSize;
 	int fontColor;
-	int[] tabs;
+	int[] tabs; /// in twips
 	int paragraphIndex, columnIndex;
 	Font* font;
 
@@ -49,7 +53,8 @@ struct BlockAttr
 		if (underline) attrs ~= "underline";
 		if (center) attrs ~= "center";
 		if (subSuper) attrs ~= format("%s", subSuper);
-		if (listLevel) attrs ~= format("listLevel=%d", listLevel);
+		if (leftIndent) attrs ~= format("leftIndent=%d", leftIndent);
+		if (firstLineIndent) attrs ~= format("firstLineIndent=%d", leftIndent);
 		if (fontSize) attrs ~= format("fontSize=%d", fontSize);
 		if (fontColor) attrs ~= format("fontColor=%d", fontColor);
 		foreach (tab; tabs) attrs ~= format("tab=%d", tab);
@@ -72,6 +77,8 @@ struct Block
 		{
 		case BlockType.Text:
 			return s ~ ` Text: ` ~ text;
+		case BlockType.Bullet:
+			return s ~ ` Bullet`;
 		case BlockType.NewParagraph:
 			return s ~ ` NewParagraph`;
 		case BlockType.Tab:

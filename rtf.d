@@ -288,8 +288,6 @@ struct Parser
 		{
 			void preAppend()
 			{
-				if (attr.listLevel && !sawBullet)
-					attr.listLevel = 0;
 			}
 
 			final switch (e.type)
@@ -300,7 +298,10 @@ struct Parser
 				break;
 			case ElementType.Group:
 				if (e.type == ElementType.Group && e.group[0].word.word == "pntext")
+				{
+					blocks ~= Block(BlockType.Bullet, attr);
 					sawBullet = true;
+				}
 				parse(e.group, attr, stack ~ e);
 				break;
 			case ElementType.ControlWord:
@@ -355,7 +356,8 @@ struct Parser
 					blocks ~= Block(BlockType.PageBreak);
 					break;
 				case "pard":
-					attr.listLevel = initAttr.listLevel;
+					attr.leftIndent = initAttr.leftIndent;
+					attr.firstLineIndent = initAttr.firstLineIndent;
 					attr.tabs = initAttr.tabs;
 					attr.center = false;
 					break;
@@ -369,10 +371,10 @@ struct Parser
 					attr.fontSize = e.word.num;
 					break;
 				case "fi":
-					// TODO - see if this allows getting rid of the hack below
+					attr.firstLineIndent = e.word.num;
 					break;
 				case "li":
-					attr.listLevel = ((e.word.num) + /*180*/360) / 360; // HACK: W:A-readme-specific
+					attr.leftIndent = e.word.num;
 					break;
 				case "b":
 					attr.bold = e.word.flag;

@@ -23,7 +23,7 @@ class NestedFormatter
 			superscript,
 			paragraph,
 			column,
-			listLevel,
+			indent,
 			font,
 			fontSize,
 			fontColor,
@@ -31,8 +31,11 @@ class NestedFormatter
 		}
 		Type type;
 
-		/// For paragraph, column, listLevel, fontSize, fontColor
+		/// For paragraph, column, listLevel, fontSize, fontColor, indent
 		int value;
+
+		/// For indent
+		int value2;
 
 		/// For font
 		Font *font;
@@ -56,8 +59,8 @@ class NestedFormatter
 			list ~= args!(Format, type => Format.Type.font, font => attr.font);
 		if (attr.fontSize)
 			list ~= Format(Format.Type.fontSize, attr.fontSize);
-		for (int i=1; i<=attr.listLevel; i++)
-			list ~= Format(Format.Type.listLevel, i);
+		if (attr.leftIndent || attr.firstLineIndent)
+			list ~= Format(Format.Type.indent, attr.leftIndent, attr.firstLineIndent);
 		if (attr.tabs.length)
 			list ~= args!(Format, type => Format.Type.tabs, tabs => attr.tabs);
 		if (attr.center)
@@ -98,6 +101,7 @@ class NestedFormatter
 	}
 
 	abstract void addText(string s);
+	void addBullet() {}
 	void newParagraph() {}
 	void newPage() {}
 
@@ -106,7 +110,7 @@ class NestedFormatter
 	void addUnderline() {}
 	void addCenter() {}
 	void addSubSuper(SubSuper subSuper) {}
-	void addListLevel(int level) {}
+	void addIndent(int left, int firstLine) {}
 	void addFont(Font* font) {}
 	void addFontSize(int size) {}
 	void addFontColor(int color) {}
@@ -119,7 +123,7 @@ class NestedFormatter
 	void removeUnderline() {}
 	void removeCenter() {}
 	void removeSubSuper(SubSuper subSuper) {}
-	void removeListLevel(int level) {}
+	void removeIndent(int left, int firstLine) {}
 	void removeFont(Font* font) {}
 	void removeFontSize(int size) {}
 	void removeFontColor(int color) {}
@@ -151,8 +155,8 @@ class NestedFormatter
 			case Format.Type.superscript:
 				addSubSuper(SubSuper.superscript);
 				break;
-			case Format.Type.listLevel:
-				addListLevel(f.value);
+			case Format.Type.indent:
+				addIndent(f.value, f.value2);
 				break;
 			case Format.Type.font:
 				addFont(f.font);
@@ -197,8 +201,8 @@ class NestedFormatter
 			case Format.Type.superscript:
 				removeSubSuper(SubSuper.superscript);
 				break;
-			case Format.Type.listLevel:
-				removeListLevel(f.value);
+			case Format.Type.indent:
+				removeIndent(f.value, f.value2);
 				break;
 			case Format.Type.font:
 				removeFont(f.font);
@@ -309,10 +313,13 @@ class NestedFormatter
 					addFormat(f);
 				}
 
-			switch (block.type)
+			final switch (block.type)
 			{
 				case BlockType.Text:
 					addText(block.text);
+					break;
+				case BlockType.Bullet:
+					addBullet();
 					break;
 				case BlockType.NewParagraph:
 					newParagraph();
@@ -322,8 +329,6 @@ class NestedFormatter
 				case BlockType.PageBreak:
 					newPage();
 					break;
-				default:
-					assert(0);
 			}
 		}
 
@@ -364,8 +369,8 @@ class NestedFormatter
 					case Format.Type.superscript:
 						attrs ~= "SuperScript";
 						break;
-					case Format.Type.listLevel:
-						attrs ~= .format("List level %d", f.value);
+					case Format.Type.indent:
+						attrs ~= .format("Indent %d %d", f.value, f.value2);
 						break;
 					case Format.Type.font:
 						attrs ~= .format("Font %s", f.font);
