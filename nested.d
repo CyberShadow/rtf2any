@@ -1,5 +1,7 @@
 module rtf2any.nested;
 
+import std.algorithm.iteration;
+import std.array;
 import std.conv;
 import std.string;
 
@@ -52,7 +54,7 @@ class NestedFormatter
 		this.blocks = blocks;
 	}
 
-	static Format[] attrToChanges(BlockAttr attr)
+	static Format[] attrToChanges(BlockAttr attr, Format[] prevFormat)
 	{
 		Format[] list;
 		if (attr.font)
@@ -60,7 +62,15 @@ class NestedFormatter
 		if (attr.fontSize)
 			list ~= Format(Format.Type.fontSize, attr.fontSize);
 		if (attr.leftIndent || attr.firstLineIndent)
-			list ~= Format(Format.Type.indent, attr.leftIndent, attr.firstLineIndent);
+		{
+			auto indents = prevFormat.filter!(f => f.type == Format.Type.indent).array;
+			int score(ref Format f) { return f.value + f.value2/2; }
+			auto f = Format(Format.Type.indent, attr.leftIndent, attr.firstLineIndent);
+			while (indents.length && score(indents[$-1]) >= score(f))
+				indents = indents[0..$-1];
+			indents ~= f;
+			list ~= indents;
+		}
 		if (attr.tabs.length)
 			list ~= args!(Format, type => Format.Type.tabs, tabs => attr.tabs);
 		if (attr.center)
@@ -263,11 +273,13 @@ class NestedFormatter
 				}
 		}
 
+		Format[] prevList;
+
 		foreach (bi, ref block; blocks)
 		{
 			blockIndex = bi;
 
-			Format[] newList = attrToChanges(block.attr);
+			Format[] newList = attrToChanges(block.attr, prevList);
 
 			// Gracious unwind (popping things off the top of the stack)
 			while (stack.length && !haveFormat(newList, stack[$-1]))
@@ -327,6 +339,8 @@ class NestedFormatter
 					newPage();
 					break;
 			}
+
+			prevList = newList;
 		}
 
 		// close remaining tags
@@ -342,10 +356,12 @@ class NestedFormatter
 	static string dumpBlocks(Block[] blocks)
 	{
 		string s;
+		Format[] prevChanges;
 		foreach (block; blocks)
 		{
 			string[] attrs;
-			foreach (f; attrToChanges(block.attr))
+			auto changes = attrToChanges(block.attr, prevChanges);
+			foreach (f; changes)
 				final switch (f.type)
 				{
 					case Format.Type.bold:
@@ -404,6 +420,7 @@ class NestedFormatter
 				assert(0);
 			}
 			s ~= .format("%s:\n%s\n", attrs, text);
+			prevChanges = changes;
 		}
 		return s;
 	}
