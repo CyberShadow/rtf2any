@@ -238,18 +238,20 @@ struct Parser
 				}
 				return;
 			case "colortbl":
-				int color = 0;
+				int color = defaultColor;
 				foreach (ref e; elements[1..$])
 				{
 					if (e.type == ElementType.Text)
 					{
 						enforce(e.text == ";", "Expected ';' colortbl terminator");
 						colors ~= color;
-						color = 0;
+						color = defaultColor;
 					}
 					else
 					{
 						enforce(e.type == ElementType.ControlWord, "Unexpected token type");
+						if (color == defaultColor)
+							color = 0;
 						switch(e.word.word)
 						{
 						case "red":
@@ -340,7 +342,7 @@ struct Parser
 					// discard some attributes for endlines
 					parAttr.bold = parAttr.italic = parAttr.underline = false;
 					parAttr.subSuper = SubSuper.none;
-					parAttr.fontColor = 0;
+					parAttr.fontColor = defaultColor;
 					parAttr.columnIndex = -1;
 					blocks ~= Block(BlockType.NewParagraph, parAttr);
 					attr.paragraphIndex++;

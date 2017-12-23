@@ -75,7 +75,7 @@ class NestedFormatter
 			list ~= args!(Format, type => Format.Type.tabs, tabs => attr.tabs);
 		if (attr.center)
 			list ~= Format(Format.Type.center);
-		if (attr.fontColor)
+		if (attr.fontColor != defaultColor)
 			list ~= Format(Format.Type.fontColor, attr.fontColor);
 		if (attr.paragraphIndex >= 0)
 			list ~= Format(Format.Type.paragraph, attr.paragraphIndex);

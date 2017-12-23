@@ -30,6 +30,8 @@ struct Font
 
 enum SubSuper { none, subscript, superscript }
 
+enum defaultColor = int.max;
+
 struct BlockAttr
 {
 	bool bold, italic, underline, center;
@@ -38,7 +40,7 @@ struct BlockAttr
 	int firstLineIndent; /// relative to leftIndent
 	bool list;
 	int fontSize;
-	int fontColor;
+	int fontColor = int.max;
 	int[] tabs; /// in twips
 	int paragraphIndex, columnIndex;
 	Font* font;
