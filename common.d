@@ -1,5 +1,6 @@
 module rtf2any.common;
 
+import std.conv;
 import std.string;
 
 enum BlockType
@@ -29,12 +30,14 @@ struct Font
 }
 
 enum SubSuper { none, subscript, superscript }
+enum Alignment { left, center, right, justify }
 
 enum defaultColor = int.max;
 
 struct BlockAttr
 {
-	bool bold, italic, underline, center;
+	bool bold, italic, underline;
+	Alignment alignment;
 	SubSuper subSuper;
 	int leftIndent; /// in twips
 	int firstLineIndent; /// relative to leftIndent
@@ -51,7 +54,7 @@ struct BlockAttr
 		if (bold) attrs ~= "bold";
 		if (italic) attrs ~= "italic";
 		if (underline) attrs ~= "underline";
-		if (center) attrs ~= "center";
+		if (alignment) attrs ~= alignment.text;
 		if (subSuper) attrs ~= format("%s", subSuper);
 		if (leftIndent) attrs ~= format("leftIndent=%d", leftIndent);
 		if (firstLineIndent) attrs ~= format("firstLineIndent=%d", leftIndent);

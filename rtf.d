@@ -433,7 +433,7 @@ struct Parser
 					attr.leftIndent = initAttr.leftIndent;
 					attr.firstLineIndent = initAttr.firstLineIndent;
 					attr.tabs = initAttr.tabs;
-					attr.center = false;
+					attr.alignment = Alignment.left;
 					break;
 				case "f":
 					attr.font = &fonts[e.word.num];
@@ -486,12 +486,10 @@ struct Parser
 				case "nowidctlpar":
 					// no-op without \widowctrl or \widctlpar
 					break;
-				case "qc":
-					attr.center = true;
-					break;
-				case "qj":
-					attr.center = false;
-					break;
+				case "ql": attr.alignment = Alignment.left; break;
+				case "qc": attr.alignment = Alignment.center; break;
+				case "qr": attr.alignment = Alignment.right; break;
+				case "qj": attr.alignment = Alignment.justify; break;
 				case "sub":
 					attr.subSuper = SubSuper.subscript;
 					break;

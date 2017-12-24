@@ -20,7 +20,7 @@ class NestedFormatter
 			bold,
 			italic,
 			underline,
-			center,
+			alignment,
 			subscript,
 			superscript,
 			paragraph,
@@ -73,8 +73,8 @@ class NestedFormatter
 		}
 		if (attr.tabs.length)
 			list ~= args!(Format, type => Format.Type.tabs, tabs => attr.tabs);
-		if (attr.center)
-			list ~= Format(Format.Type.center);
+		if (attr.alignment)
+			list ~= Format(Format.Type.alignment, attr.alignment);
 		if (attr.fontColor != defaultColor)
 			list ~= Format(Format.Type.fontColor, attr.fontColor);
 		if (attr.paragraphIndex >= 0)
@@ -118,7 +118,7 @@ class NestedFormatter
 	void addBold() {}
 	void addItalic() {}
 	void addUnderline() {}
-	void addCenter() {}
+	void addAlignment(Alignment alignment) {}
 	void addSubSuper(SubSuper subSuper) {}
 	void addIndent(int left, int firstLine) {}
 	void addFont(Font* font) {}
@@ -131,7 +131,7 @@ class NestedFormatter
 	void removeBold() {}
 	void removeItalic() {}
 	void removeUnderline() {}
-	void removeCenter() {}
+	void removeAlignment(Alignment alignment) {}
 	void removeSubSuper(SubSuper subSuper) {}
 	void removeIndent(int left, int firstLine) {}
 	void removeFont(Font* font) {}
@@ -156,8 +156,8 @@ class NestedFormatter
 			case Format.Type.underline:
 				addUnderline();
 				break;
-			case Format.Type.center:
-				addCenter();
+			case Format.Type.alignment:
+				addAlignment(cast(Alignment)f.value);
 				break;
 			case Format.Type.subscript:
 				addSubSuper(SubSuper.subscript);
@@ -202,8 +202,8 @@ class NestedFormatter
 			case Format.Type.underline:
 				removeUnderline();
 				break;
-			case Format.Type.center:
-				removeCenter();
+			case Format.Type.alignment:
+				removeAlignment(cast(Alignment)f.value);
 				break;
 			case Format.Type.subscript:
 				removeSubSuper(SubSuper.subscript);
@@ -373,8 +373,8 @@ class NestedFormatter
 					case Format.Type.underline:
 						attrs ~= "Underline";
 						break;
-					case Format.Type.center:
-						attrs ~= "Center";
+					case Format.Type.alignment:
+						attrs ~= "Align " ~ text(cast(Alignment)f.value);
 						break;
 					case Format.Type.subscript:
 						attrs ~= "SubScript";
