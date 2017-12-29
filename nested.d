@@ -4,6 +4,7 @@ import std.algorithm.iteration;
 import std.array;
 import std.conv;
 import std.string;
+import std.traits;
 
 import ae.utils.meta.args;
 
@@ -33,16 +34,33 @@ class NestedFormatter
 		}
 		Type type;
 
-		/// For paragraph, column, listLevel, fontSize, fontColor, indent
-		int value;
+		this(Type type) { this.type = type; }
 
-		/// For indent
-		int value2;
+		union
+		{
+			/// Type.alignment
+			Alignment alignment;
 
-		/// For font
+			/// Type.paragraph
+			int paragraphIndex;
+
+			/// Type.column
+			int columnIndex;
+
+			/// Type.indent
+			struct { int leftIndent, firstLineIndent; }
+
+			/// Type.fontSize
+			int fontSize;
+
+			/// Type.fontColor
+			int fontColor;
+		}
+
+		/// Type.font
 		Font *font;
 
-		/// For tabs
+		/// Type.tabs
 		int[] tabs;
 	}
 
@@ -60,12 +78,12 @@ class NestedFormatter
 		if (attr.font)
 			list ~= args!(Format, type => Format.Type.font, font => attr.font);
 		if (attr.fontSize)
-			list ~= Format(Format.Type.fontSize, attr.fontSize);
+			list ~= args!(Format, type => Format.Type.fontSize, fontSize => attr.fontSize);
 		if (attr.leftIndent || attr.firstLineIndent)
 		{
 			auto indents = prevFormat.filter!(f => f.type == Format.Type.indent).array;
-			int score(ref Format f) { return f.value + f.value2/2; }
-			auto f = Format(Format.Type.indent, attr.leftIndent, attr.firstLineIndent);
+			int score(ref Format f) { return f.leftIndent + f.firstLineIndent/2; }
+			auto f = args!(Format, type => Format.Type.indent, leftIndent => attr.leftIndent, firstLineIndent => attr.firstLineIndent);
 			while (indents.length && score(indents[$-1]) >= score(f))
 				indents = indents[0..$-1];
 			indents ~= f;
@@ -74,13 +92,13 @@ class NestedFormatter
 		if (attr.tabs.length)
 			list ~= args!(Format, type => Format.Type.tabs, tabs => attr.tabs);
 		if (attr.alignment)
-			list ~= Format(Format.Type.alignment, attr.alignment);
+			list ~= args!(Format, type => Format.Type.alignment, alignment => attr.alignment);
 		if (attr.fontColor != defaultColor)
-			list ~= Format(Format.Type.fontColor, attr.fontColor);
+			list ~= args!(Format, type => Format.Type.fontColor, fontColor => attr.fontColor);
 		if (attr.paragraphIndex >= 0)
-			list ~= Format(Format.Type.paragraph, attr.paragraphIndex);
+			list ~= args!(Format, type => Format.Type.paragraph, paragraphIndex => attr.paragraphIndex);
 		if (attr.columnIndex >= 0)
-			list ~= Format(Format.Type.column, attr.columnIndex);
+			list ~= args!(Format, type => Format.Type.column, columnIndex => attr.columnIndex);
 		if (attr.bold)
 			list ~= Format(Format.Type.bold);
 		if (attr.italic)
@@ -157,7 +175,7 @@ class NestedFormatter
 				addUnderline();
 				break;
 			case Format.Type.alignment:
-				addAlignment(cast(Alignment)f.value);
+				addAlignment(f.alignment);
 				break;
 			case Format.Type.subscript:
 				addSubSuper(SubSuper.subscript);
@@ -166,25 +184,25 @@ class NestedFormatter
 				addSubSuper(SubSuper.superscript);
 				break;
 			case Format.Type.indent:
-				addIndent(f.value, f.value2);
+				addIndent(f.leftIndent, f.firstLineIndent);
 				break;
 			case Format.Type.font:
 				addFont(f.font);
 				break;
 			case Format.Type.fontSize:
-				addFontSize(f.value);
+				addFontSize(f.fontSize);
 				break;
 			case Format.Type.fontColor:
-				addFontColor(f.value);
+				addFontColor(f.fontColor);
 				break;
 			case Format.Type.tabs:
 				addTabs(f.tabs);
 				break;
 			case Format.Type.paragraph:
-				addInParagraph(f.value, block.attr.list);
+				addInParagraph(f.paragraphIndex, block.attr.list);
 				break;
 			case Format.Type.column:
-				addInColumn(f.value);
+				addInColumn(f.columnIndex);
 				break;
 		}
 	}
@@ -203,7 +221,7 @@ class NestedFormatter
 				removeUnderline();
 				break;
 			case Format.Type.alignment:
-				removeAlignment(cast(Alignment)f.value);
+				removeAlignment(f.alignment);
 				break;
 			case Format.Type.subscript:
 				removeSubSuper(SubSuper.subscript);
@@ -212,25 +230,25 @@ class NestedFormatter
 				removeSubSuper(SubSuper.superscript);
 				break;
 			case Format.Type.indent:
-				removeIndent(f.value, f.value2);
+				removeIndent(f.leftIndent, f.firstLineIndent);
 				break;
 			case Format.Type.font:
 				removeFont(f.font);
 				break;
 			case Format.Type.fontSize:
-				removeFontSize(f.value);
+				removeFontSize(f.fontSize);
 				break;
 			case Format.Type.fontColor:
-				removeFontColor(f.value);
+				removeFontColor(f.fontColor);
 				break;
 			case Format.Type.tabs:
 				removeTabs(f.tabs);
 				break;
 			case Format.Type.paragraph:
-				removeInParagraph(f.value, block.attr.list);
+				removeInParagraph(f.paragraphIndex, block.attr.list);
 				break;
 			case Format.Type.column:
-				removeInColumn(f.value);
+				removeInColumn(f.columnIndex);
 				break;
 		}
 	}
@@ -374,7 +392,7 @@ class NestedFormatter
 						attrs ~= "Underline";
 						break;
 					case Format.Type.alignment:
-						attrs ~= "Align " ~ text(cast(Alignment)f.value);
+						attrs ~= "Align " ~ text(f.alignment);
 						break;
 					case Format.Type.subscript:
 						attrs ~= "SubScript";
@@ -383,25 +401,25 @@ class NestedFormatter
 						attrs ~= "SuperScript";
 						break;
 					case Format.Type.indent:
-						attrs ~= .format("Indent %d %d", f.value, f.value2);
+						attrs ~= .format("Indent %d %d", f.leftIndent, f.firstLineIndent);
 						break;
 					case Format.Type.font:
 						attrs ~= .format("Font %s", f.font);
 						break;
 					case Format.Type.fontSize:
-						attrs ~= .format("Font size %d", f.value);
+						attrs ~= .format("Font size %d", f.fontSize);
 						break;
 					case Format.Type.fontColor:
-						attrs ~= .format("Font color #%06x", f.value);
+						attrs ~= .format("Font color #%06x", f.fontColor);
 						break;
 					case Format.Type.tabs:
 						attrs ~= .format("Tab count %d", f.tabs.length);
 						break;
 					case Format.Type.paragraph:
-						attrs ~= .format("Paragraph %d", f.value);
+						attrs ~= .format("Paragraph %d", f.paragraphIndex);
 						break;
 					case Format.Type.column:
-						attrs ~= .format("Column %d", f.value);
+						attrs ~= .format("Column %d", f.columnIndex);
 						break;
 				}
 			string text;
