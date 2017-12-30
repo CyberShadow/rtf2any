@@ -371,7 +371,7 @@ struct Parser
 				blocks ~= Block(BlockType.Text, attr, e.text);
 				break;
 			case ElementType.Group:
-				if (e.type == ElementType.Group && e.group[0].word.word == "pntext")
+				if (e.type == ElementType.Group && e.group[0].word.word == "*")
 					attr.list = true;
 				parse(e.group, attr, stack ~ e);
 				break;
@@ -423,7 +423,6 @@ struct Parser
 					blocks ~= Block(BlockType.NewParagraph, parAttr);
 					attr.paragraphIndex++;
 					attr.columnIndex = 0;
-					attr.list = false;
 					break;
 				case "page":
 					preAppend();
@@ -434,6 +433,7 @@ struct Parser
 					attr.firstLineIndent = initAttr.firstLineIndent;
 					attr.tabs = initAttr.tabs;
 					attr.alignment = Alignment.left;
+					attr.list = false;
 					break;
 				case "f":
 					attr.font = &fonts[e.word.num];
