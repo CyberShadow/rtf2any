@@ -57,7 +57,7 @@ struct BlockAttr
 		if (alignment) attrs ~= alignment.text;
 		if (subSuper) attrs ~= format("%s", subSuper);
 		if (leftIndent) attrs ~= format("leftIndent=%d", leftIndent);
-		if (firstLineIndent) attrs ~= format("firstLineIndent=%d", leftIndent);
+		if (firstLineIndent) attrs ~= format("firstLineIndent=%d", firstLineIndent);
 		if (list) attrs ~= "list";
 		if (fontSize) attrs ~= format("fontSize=%d", fontSize);
 		if (fontColor) attrs ~= format("fontColor=%d", fontColor);
