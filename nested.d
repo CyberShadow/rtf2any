@@ -48,7 +48,7 @@ class NestedFormatter
 			int columnIndex;
 
 			/// Type.indent
-			struct { int leftIndent, firstLineIndent; }
+			struct { int leftIndent, firstLineIndent; bool list; }
 
 			/// Type.fontSize
 			int fontSize;
@@ -79,11 +79,11 @@ class NestedFormatter
 			list ~= args!(Format, type => Format.Type.font, font => attr.font);
 		if (attr.fontSize)
 			list ~= args!(Format, type => Format.Type.fontSize, fontSize => attr.fontSize);
-		if (attr.leftIndent || attr.firstLineIndent)
+		if (attr.leftIndent || attr.firstLineIndent || attr.list)
 		{
 			auto indents = prevFormat.filter!(f => f.type == Format.Type.indent).array;
 			int score(ref Format f) { return f.leftIndent + f.firstLineIndent/2; }
-			auto f = args!(Format, type => Format.Type.indent, leftIndent => attr.leftIndent, firstLineIndent => attr.firstLineIndent);
+			auto f = args!(Format, type => Format.Type.indent, leftIndent => attr.leftIndent, firstLineIndent => attr.firstLineIndent, list => attr.list);
 			while (indents.length && score(indents[$-1]) >= score(f))
 				indents = indents[0..$-1];
 			indents ~= f;
@@ -138,7 +138,7 @@ class NestedFormatter
 	void addUnderline() {}
 	void addAlignment(Alignment alignment) {}
 	void addSubSuper(SubSuper subSuper) {}
-	void addIndent(int left, int firstLine) {}
+	void addIndent(int left, int firstLine, bool list) {}
 	void addFont(Font* font) {}
 	void addFontSize(int size) {}
 	void addFontColor(int color) {}
@@ -151,7 +151,7 @@ class NestedFormatter
 	void removeUnderline() {}
 	void removeAlignment(Alignment alignment) {}
 	void removeSubSuper(SubSuper subSuper) {}
-	void removeIndent(int left, int firstLine) {}
+	void removeIndent(int left, int firstLine, bool list) {}
 	void removeFont(Font* font) {}
 	void removeFontSize(int size) {}
 	void removeFontColor(int color) {}
@@ -184,7 +184,7 @@ class NestedFormatter
 				addSubSuper(SubSuper.superscript);
 				break;
 			case Format.Type.indent:
-				addIndent(f.leftIndent, f.firstLineIndent);
+				addIndent(f.leftIndent, f.firstLineIndent, f.list);
 				break;
 			case Format.Type.font:
 				addFont(f.font);
@@ -230,7 +230,7 @@ class NestedFormatter
 				removeSubSuper(SubSuper.superscript);
 				break;
 			case Format.Type.indent:
-				removeIndent(f.leftIndent, f.firstLineIndent);
+				removeIndent(f.leftIndent, f.firstLineIndent, f.list);
 				break;
 			case Format.Type.font:
 				removeFont(f.font);
