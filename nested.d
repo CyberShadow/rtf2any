@@ -259,6 +259,7 @@ class NestedFormatter
 		{
 			case Format.Type.paragraph:
 			case Format.Type.column:
+			case Format.Type.indent:
 				return false;
 			default:
 				return true;
