@@ -80,7 +80,7 @@ struct Block
 		final switch (type)
 		{
 		case BlockType.Text:
-			return s ~ ` Text: ` ~ text;
+			return s ~ format(" Text: %(%s%)", [text]);
 		case BlockType.NewParagraph:
 			return s ~ ` NewParagraph`;
 		case BlockType.Tab:
