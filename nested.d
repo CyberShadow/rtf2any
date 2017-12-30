@@ -62,6 +62,39 @@ class NestedFormatter
 
 		/// Type.tabs
 		int[] tabs;
+
+		string toString() const
+		{
+			final switch (type)
+			{
+				case Format.Type.bold:
+					return "Bold";
+				case Format.Type.italic:
+					return "Italic";
+				case Format.Type.underline:
+					return "Underline";
+				case Format.Type.alignment:
+					return text("Alignment ", alignment);
+				case Format.Type.subscript:
+					return "SubScript";
+				case Format.Type.superscript:
+					return "SuperScript";
+				case Format.Type.indent:
+					return text("Indent ", leftIndent, " ", firstLineIndent, " ", list);
+				case Format.Type.font:
+					return text("Font ", font);
+				case Format.Type.fontSize:
+					return text("FontSize ", fontSize);
+				case Format.Type.fontColor:
+					return text("FontColor ", fontColor);
+				case Format.Type.tabs:
+					return text("Tabs ", tabs);
+				case Format.Type.paragraph:
+					return text("Paragraph ", paragraphIndex);
+				case Format.Type.column:
+					return text("Column ", columnIndex);
+			}
+		}
 	}
 
 	Block[] blocks;
