@@ -6,6 +6,7 @@ import std.conv;
 import std.string;
 import std.traits;
 
+import ae.utils.meta : enumLength;
 import ae.utils.meta.args;
 
 import rtf2any.common;
@@ -153,6 +154,22 @@ class NestedFormatter
 		return false;
 	}
 
+	static bool haveActiveFormat(Format[] stack, Format format)
+	{
+		bool[enumLength!(Format.Type)] sawFormat;
+		foreach_reverse (f; stack)
+		{
+			if (!sawFormat[f.type])
+			{
+				if (f == format)
+					return true;
+				sawFormat[f.type] = true;
+			}
+		}
+		return false;
+	}
+
+	version(none)
 	static bool haveFormat(Format[] stack, Format.Type formatType)
 	{
 		foreach (f; stack)
@@ -371,7 +388,7 @@ class NestedFormatter
 
 			// Add new and re-add unwound formatters.
 			foreach (f; newList)
-				if (!haveFormat(stack, f))
+				if (haveActiveFormat(newList, f) && !haveActiveFormat(stack, f))
 				{
 					stack ~= f;
 					addFormat(f, block);
