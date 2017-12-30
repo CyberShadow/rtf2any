@@ -74,25 +74,25 @@ class NestedFormatter
 				case Format.Type.underline:
 					return "Underline";
 				case Format.Type.alignment:
-					return text("Alignment ", alignment);
+					return .format("Align %s", alignment);
 				case Format.Type.subscript:
 					return "SubScript";
 				case Format.Type.superscript:
 					return "SuperScript";
 				case Format.Type.indent:
-					return text("Indent ", leftIndent, " ", firstLineIndent, " ", list);
+					return .format("Indent %d %d %s", leftIndent, firstLineIndent, list);
 				case Format.Type.font:
-					return text("Font ", font);
+					return .format("Font %s", font);
 				case Format.Type.fontSize:
-					return text("FontSize ", fontSize);
+					return .format("Font size %d", fontSize);
 				case Format.Type.fontColor:
-					return text("FontColor ", fontColor);
+					return .format("Font color #%06x", fontColor);
 				case Format.Type.tabs:
-					return text("Tabs ", tabs);
+					return .format("Tab count %d", tabs.length);
 				case Format.Type.paragraph:
-					return text("Paragraph ", paragraphIndex);
+					return .format("Paragraph %d", paragraphIndex);
 				case Format.Type.column:
-					return text("Column ", columnIndex);
+					return .format("Column %d", columnIndex);
 			}
 		}
 	}
@@ -413,49 +413,8 @@ class NestedFormatter
 		{
 			string[] attrs;
 			auto changes = attrToChanges(block.attr, prevChanges);
-			foreach (f; changes)
-				final switch (f.type)
-				{
-					case Format.Type.bold:
-						attrs ~= "Bold";
-						break;
-					case Format.Type.italic:
-						attrs ~= "Italic";
-						break;
-					case Format.Type.underline:
-						attrs ~= "Underline";
-						break;
-					case Format.Type.alignment:
-						attrs ~= "Align " ~ text(f.alignment);
-						break;
-					case Format.Type.subscript:
-						attrs ~= "SubScript";
-						break;
-					case Format.Type.superscript:
-						attrs ~= "SuperScript";
-						break;
-					case Format.Type.indent:
-						attrs ~= .format("Indent %d %d", f.leftIndent, f.firstLineIndent);
-						break;
-					case Format.Type.font:
-						attrs ~= .format("Font %s", f.font);
-						break;
-					case Format.Type.fontSize:
-						attrs ~= .format("Font size %d", f.fontSize);
-						break;
-					case Format.Type.fontColor:
-						attrs ~= .format("Font color #%06x", f.fontColor);
-						break;
-					case Format.Type.tabs:
-						attrs ~= .format("Tab count %d", f.tabs.length);
-						break;
-					case Format.Type.paragraph:
-						attrs ~= .format("Paragraph %d", f.paragraphIndex);
-						break;
-					case Format.Type.column:
-						attrs ~= .format("Column %d", f.columnIndex);
-						break;
-				}
+			foreach (ref f; changes)
+				attrs ~= f.toString();
 			string text;
 			switch (block.type)
 			{
