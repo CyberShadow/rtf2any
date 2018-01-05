@@ -531,7 +531,6 @@ struct Parser
 		BlockAttr attr; // default attributes
 		parse(elements, attr, null);
 
-		/// Unmark columns and tab stops in paragraphs that do not have tabs.
 		{
 			Block[][] paragraphs = [];
 			size_t parStart = 0;
@@ -544,12 +543,9 @@ struct Parser
 			paragraphs ~= blocks[parStart..$];
 
 			auto haveTabs = paragraphs.map!(paragraph => paragraph.any!((ref Block block) => block.type == BlockType.Tab)).array;
-			foreach (i, paragraph; paragraphs)
-				if (!haveTabs[i])
-					foreach (ref block; paragraph)
-						block.attr.columnIndex = -1;
-
 			auto haveTabStops = paragraphs.map!(paragraph => paragraph.any!((ref Block block) => block.attr.tabs.length != 0)).array;
+
+			/// Unmark tab stops in paragraphs that do not have tabs
 			foreach_reverse (i; 0..paragraphs.length-1)
 				if (haveTabStops[i] && !haveTabStops[i+1] && !haveTabs[i])
 				{
@@ -563,6 +559,12 @@ struct Parser
 				if (!haveTabStops[i] && haveTabs[i])
 					foreach (ref block; paragraph)
 						block.attr.tabs = emptySlice!int;
+
+			/// Unmark columns in paragraphs that do not have tabs or tab stops
+			foreach (i, paragraph; paragraphs)
+				if (!haveTabs[i] && !haveTabStops[i])
+					foreach (ref block; paragraph)
+						block.attr.columnIndex = -1;
 
 			blocks = paragraphs.join;
 		}
