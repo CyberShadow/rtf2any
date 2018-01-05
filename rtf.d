@@ -362,6 +362,8 @@ struct Parser
 		{
 			void preAppend()
 			{
+				if (attr.list)
+					attr.listItemIndex = attr.paragraphIndex;
 			}
 
 			final switch (e.type)

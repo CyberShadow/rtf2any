@@ -45,7 +45,7 @@ struct BlockAttr
 	int fontSize;
 	int fontColor = int.max;
 	int[] tabs; /// in twips
-	int paragraphIndex, columnIndex;
+	int paragraphIndex, columnIndex, listItemIndex;
 	Font* font;
 
 	string toString()
@@ -64,6 +64,7 @@ struct BlockAttr
 		foreach (tab; tabs) attrs ~= format("tab=%d", tab);
 		if (paragraphIndex >= 0) attrs ~= format("paragraphIndex=%d", paragraphIndex);
 		if (columnIndex >= 0) attrs ~= format("columnIndex=%d", columnIndex);
+		if (listItemIndex >= 0) attrs ~= format("listItemIndex=%d", listItemIndex);
 		return "[" ~ join(attrs, " ") ~ "]";
 	}
 }

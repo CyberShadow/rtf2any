@@ -6,6 +6,7 @@ import std.conv;
 import std.string;
 import std.traits;
 
+import ae.utils.array;
 import ae.utils.meta : enumLength;
 import ae.utils.meta.args;
 
@@ -25,6 +26,7 @@ class NestedFormatter
 			alignment,
 			subscript,
 			superscript,
+			listItem,
 			paragraph,
 			column,
 			indent,
@@ -41,6 +43,9 @@ class NestedFormatter
 		{
 			/// Type.alignment
 			Alignment alignment;
+
+			/// Type.listItem
+			int listItemIndex;
 
 			/// Type.paragraph
 			int paragraphIndex;
@@ -90,6 +95,8 @@ class NestedFormatter
 					return .format("Font color #%06x", fontColor);
 				case Format.Type.tabs:
 					return .format("Tab count %d", tabs.length);
+				case Format.Type.listItem:
+					return .format("List item %d", listItemIndex);
 				case Format.Type.paragraph:
 					return .format("Paragraph %d", paragraphIndex);
 				case Format.Type.column:
@@ -115,12 +122,22 @@ class NestedFormatter
 			list ~= args!(Format, type => Format.Type.fontSize, fontSize => attr.fontSize);
 		if (attr.leftIndent || attr.firstLineIndent || attr.list)
 		{
-			auto indents = prevFormat.filter!(f => f.type == Format.Type.indent).array;
-			int score(ref Format f) { return f.leftIndent + f.firstLineIndent/2; }
+			auto indents = prevFormat.filter!(f => f.type.isOneOf(Format.Type.indent, Format.Type.listItem)).array;
 			auto f = args!(Format, type => Format.Type.indent, leftIndent => attr.leftIndent, firstLineIndent => attr.firstLineIndent, list => attr.list);
-			while (indents.length && score(indents[$-1]) >= score(f))
-				indents = indents[0..$-1];
+			foreach (i, ref indent; indents)
+				if (indent.type == Format.Type.indent && indent.leftIndent >= f.leftIndent)
+				{
+					if (indent.leftIndent == f.leftIndent)
+						indents = indents[0..i+1];
+					else
+						indents = indents[0..i] ~ f;
+					goto cutoff;
+				}
 			indents ~= f;
+		cutoff:
+			assert(indents[$-1].type == Format.Type.indent);
+			if (indents[$-1].list)
+				indents ~= args!(Format, type => Format.Type.listItem, listItemIndex => attr.listItemIndex);
 			list ~= indents;
 		}
 		if (attr.tabs.length)
@@ -194,6 +211,7 @@ class NestedFormatter
 	void addFontColor(int color) {}
 	void addTabs(int[] tabs) {}
 	void addInParagraph(int index, bool list) {}
+	void addInListItem(int index) {}
 	void addInColumn(int index) {}
 	
 	void removeBold() {}
@@ -207,6 +225,7 @@ class NestedFormatter
 	void removeFontColor(int color) {}
 	void removeTabs(int[] tabs) {}
 	void removeInParagraph(int index, bool list) {}
+	void removeInListItem(int index) {}
 	void removeInColumn(int index) {}
 
 	void flush() {}
@@ -247,6 +266,9 @@ class NestedFormatter
 				break;
 			case Format.Type.tabs:
 				addTabs(f.tabs);
+				break;
+			case Format.Type.listItem:
+				addInListItem(f.listItemIndex);
 				break;
 			case Format.Type.paragraph:
 				addInParagraph(f.paragraphIndex, block.attr.list);
@@ -294,6 +316,9 @@ class NestedFormatter
 			case Format.Type.tabs:
 				removeTabs(f.tabs);
 				break;
+			case Format.Type.listItem:
+				removeInListItem(f.listItemIndex);
+				break;
 			case Format.Type.paragraph:
 				removeInParagraph(f.paragraphIndex, block.attr.list);
 				break;
@@ -310,6 +335,7 @@ class NestedFormatter
 			case Format.Type.paragraph:
 			case Format.Type.column:
 			case Format.Type.indent:
+			case Format.Type.listItem:
 				return false;
 			default:
 				return true;
