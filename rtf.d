@@ -546,13 +546,18 @@ struct Parser
 			auto haveTabStops = paragraphs.map!(paragraph => paragraph.any!((ref Block block) => block.attr.tabs.length != 0)).array;
 
 			/// Unmark tab stops in paragraphs that do not have tabs
+			void unmarkTabs(size_t i)
+			{
+				foreach (ref block; paragraphs[i])
+					block.attr.tabs = null;
+				haveTabStops[i] = false;
+			}
+			foreach (i; 1..paragraphs.length)
+				if (haveTabStops[i] && !haveTabStops[i-1] && !haveTabs[i])
+					unmarkTabs(i);
 			foreach_reverse (i; 0..paragraphs.length-1)
 				if (haveTabStops[i] && !haveTabStops[i+1] && !haveTabs[i])
-				{
-					foreach (ref block; paragraphs[i])
-						block.attr.tabs = null;
-					haveTabStops[i] = false;
-				}
+					unmarkTabs(i);
 
 			// Paint paragraphs that have tabs but not tab stops
 			foreach (i, paragraph; paragraphs)
