@@ -389,7 +389,7 @@ class NestedFormatter
 				{
 					bool canSplit = true;
 					foreach (rf; stack[i+1..$])
-						if (!canSplitFormat(rf))
+						if (haveFormat(newList, rf) && !canSplitFormat(rf))
 						{
 							canSplit = false;
 							break;
