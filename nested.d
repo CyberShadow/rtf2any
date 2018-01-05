@@ -424,6 +424,10 @@ class NestedFormatter
 				if (haveActiveFormat(newList, f))
 					assert(haveActiveFormat(stack, f), "Format not in stack: " ~ f.toString());
 
+			foreach (f; stack)
+				if (haveActiveFormat(stack, f))
+					assert(haveActiveFormat(newList, f), "Rogue format in stack: " ~ f.toString());
+
 			final switch (block.type)
 			{
 				case BlockType.Text:
