@@ -140,7 +140,7 @@ class NestedFormatter
 				indents ~= args!(Format, type => Format.Type.listItem, listItemIndex => attr.listItemIndex);
 			list ~= indents;
 		}
-		if (attr.tabs.length)
+		if (attr.tabs)
 			list ~= args!(Format, type => Format.Type.tabs, tabs => attr.tabs);
 		if (attr.alignment)
 			list ~= args!(Format, type => Format.Type.alignment, alignment => attr.alignment);

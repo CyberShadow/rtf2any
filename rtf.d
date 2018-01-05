@@ -8,6 +8,7 @@ import std.exception;
 import std.string;
 import std.utf;
 
+import ae.utils.array;
 import ae.utils.iconv;
 
 import rtf2any.common;
@@ -556,6 +557,12 @@ struct Parser
 						block.attr.tabs = null;
 					haveTabStops[i] = false;
 				}
+
+			// Paint paragraphs that have tabs but not tab stops
+			foreach (i, paragraph; paragraphs)
+				if (!haveTabStops[i] && haveTabs[i])
+					foreach (ref block; paragraph)
+						block.attr.tabs = emptySlice!int;
 
 			blocks = paragraphs.join;
 		}
