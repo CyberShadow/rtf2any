@@ -1,5 +1,8 @@
 module rtf2any.rtf;
 
+import std.algorithm.iteration;
+import std.algorithm.searching;
+import std.array;
 import std.conv;
 import std.exception;
 import std.string;
@@ -529,20 +532,23 @@ struct Parser
 
 		/// Unmark columns in paragraphs that do not have tabs.
 		{
+			Block[][] paragraphs = [];
 			size_t parStart = 0;
-			bool sawTab = false;
 			foreach (bi, ref block; blocks)
-				if (block.type == BlockType.Tab)
-					sawTab = true;
-				else
 				if (block.type == BlockType.NewParagraph)
 				{
-					if (!sawTab)
-						foreach (ref b; blocks[parStart..bi])
-							b.attr.columnIndex = -1;
-					sawTab = false;
+					paragraphs ~= blocks[parStart..bi+1];
 					parStart = bi + 1;
 				}
+			paragraphs ~= blocks[parStart..$];
+
+			auto haveTabs = paragraphs.map!(paragraph => paragraph.any!((ref Block block) => block.type == BlockType.Tab)).array;
+			foreach (i, paragraph; paragraphs)
+				if (!haveTabs[i])
+					foreach (ref block; paragraph)
+						block.attr.columnIndex = -1;
+
+			blocks = paragraphs.join;
 		}
 
 		return blocks;
