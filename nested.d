@@ -127,7 +127,7 @@ class NestedFormatter
 			foreach (i, ref indent; indents)
 				if (indent.type == Format.Type.indent && indent.leftIndent >= f.leftIndent)
 				{
-					if (indent.leftIndent == f.leftIndent)
+					if (indent.leftIndent == f.leftIndent && indent.list && !f.list && f.firstLineIndent == 0)
 						indents = indents[0..i+1];
 					else
 						indents = indents[0..i] ~ f;
