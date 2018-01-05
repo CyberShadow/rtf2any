@@ -420,6 +420,10 @@ class NestedFormatter
 					addFormat(f, block);
 				}
 
+			foreach (f; newList)
+				if (haveActiveFormat(newList, f))
+					assert(haveActiveFormat(stack, f), "Format not in stack: " ~ f.toString());
+
 			final switch (block.type)
 			{
 				case BlockType.Text:
