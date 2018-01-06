@@ -21,7 +21,13 @@ class XmlFormatter : NestedFormatter
 		auto document = new XmlDocument();
 		xmlStack ~= document;
 
+		auto declNode = new XmlNode(XmlNodeType.Meta, "xml");
+		declNode.attributes["version"] = "1.0";
+		declNode.attributes["encoding"] = "UTF-8";
+		document.children ~= declNode;
+
 		auto rootNode = new XmlNode(XmlNodeType.Node, "document");
+		rootNode.attributes["xmlns"] = "https://github.com/CyberShadow/rtf2any/blob/master/xml/document.xsd";
 		rootNode.attributes["title"] = title;
 		document.children ~= rootNode;
 		xmlStack ~= rootNode;

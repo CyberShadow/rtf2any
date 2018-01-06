@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns="https://github.com/CyberShadow/rtf2any/blob/master/xml/document.xsd"
+    targetNamespace="https://github.com/CyberShadow/rtf2any/blob/master/xml/document.xsd"
+    elementFormDefault="qualified">
+
+  <xs:group name="node">
+    <xs:choice>
+      <xs:element name="font" type="fontType" />
+      <xs:element name="size" type="sizeType" />
+      <xs:element name="tabs" type="tabsType" />
+      <xs:element name="color" type="colorType" />
+      <xs:element name="indent" type="indentType" />
+      <xs:element name="align" type="alignType" />
+      <xs:element name="col" type="nodeType" />
+      <xs:element name="p" type="nodeType" />
+      <xs:element name="li" type="nodeType" />
+      <xs:element name="b" type="nodeType" />
+      <xs:element name="i" type="nodeType" />
+      <xs:element name="u" type="nodeType" />
+      <xs:element name="sub" type="nodeType" />
+      <xs:element name="super" type="nodeType" />
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="nodes">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="node"/>
+      </xs:choice>
+    </xs:sequence>
+  </xs:group>
+
+  <xs:complexType name="fontType" mixed="true">
+    <xs:group ref="nodes" />
+    <xs:attribute name="name" />
+    <xs:attribute name="family" />
+    <xs:attribute name="pitch" type="xs:integer" />
+    <xs:attribute name="charset" type="xs:integer" />
+  </xs:complexType>
+
+  <xs:complexType name="sizeType" mixed="true">
+    <xs:group ref="nodes" />
+    <xs:attribute name="pt" type="xs:integer" />
+  </xs:complexType>
+
+  <xs:complexType name="tabsType" mixed="true">
+    <xs:group ref="nodes" />
+    <xs:attribute name="stops" />
+  </xs:complexType>
+
+  <xs:complexType name="colorType" mixed="true">
+    <xs:group ref="nodes" />
+    <xs:attribute name="rgb" />
+  </xs:complexType>
+
+  <xs:complexType name="indentType" mixed="true">
+    <xs:group ref="nodes" />
+    <xs:attribute name="left" type="xs:integer" />
+    <xs:attribute name="first-line" type="xs:integer" />
+    <xs:attribute name="list" type="xs:boolean" />
+  </xs:complexType>
+
+  <xs:simpleType name="dirType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="left"/>
+      <xs:enumeration value="center"/>
+      <xs:enumeration value="right"/>
+      <xs:enumeration value="justify"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="alignType" mixed="true">
+    <xs:group ref="nodes" />
+    <xs:attribute name="dir" type="dirType" />
+  </xs:complexType>
+
+  <xs:complexType name="nodeType" mixed="true">
+    <xs:group ref="nodes" />
+  </xs:complexType>
+
+  <xs:complexType name="documentType">
+    <xs:group ref="nodes" />
+    <xs:attribute name="title" />
+  </xs:complexType>
+
+  <xs:element name="document" type="documentType" />
+</xs:schema>

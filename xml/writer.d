@@ -55,6 +55,9 @@ string writeRTFXML(XmlNode node)
 				return;
 			default:
 				assert(false);
+			case XmlNodeType.Meta:
+				node.writeTo(writer);
+				break;
 			case XmlNodeType.Text:
 				writer.startLine();
 				writer.text(node.tag);
