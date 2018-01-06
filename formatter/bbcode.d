@@ -1,7 +1,7 @@
-module rtf2any.bbcode;
+module rtf2any.formatter.bbcode;
 
 import rtf2any.common;
-import rtf2any.nested;
+import rtf2any.formatter.nested;
 
 class BBCodeFormatter : NestedFormatter
 {

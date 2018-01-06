@@ -1,9 +1,9 @@
-module rtf2any.dumpblocks;
+module rtf2any.tools.dumpblocks;
 
 import std.file;
 import std.stdio;
 
-import rtf2any.rtf;
+import rtf2any.rtf.parser;
 
 void main(string[] args)
 {

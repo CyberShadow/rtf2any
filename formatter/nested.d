@@ -1,4 +1,4 @@
-module rtf2any.nested;
+module rtf2any.formatter.nested;
 
 import std.algorithm.iteration;
 import std.array;

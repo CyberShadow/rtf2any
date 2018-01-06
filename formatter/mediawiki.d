@@ -1,7 +1,7 @@
-module rtf2any.mediawiki;
+module rtf2any.formatter.mediawiki;
 
 import rtf2any.common;
-import rtf2any.nested;
+import rtf2any.formatter.nested;
 import std.string;
 import std.array;
 
