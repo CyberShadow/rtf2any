@@ -386,7 +386,7 @@ struct Parser
 			{
 				/// Maximum number of contiguous paragraphs that may
 				/// have useless tab stops.
-				enum maxParagraphs = 2;
+				enum maxParagraphs = 10;
 
 				size_t start = size_t.max;
 				foreach (i; 0..paragraphs.length)
