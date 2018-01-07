@@ -352,6 +352,7 @@ class NestedFormatter
 		// algorithm below promotes properties (e.g. font size) which
 		// correspond to the paragraph delimiter.
 		{
+			blocks = blocks.dup;
 			BlockAttr* paragraphAttr;
 			foreach_reverse (bi, ref block; blocks)
 				if (block.type == BlockType.NewParagraph)
@@ -362,7 +363,7 @@ class NestedFormatter
 						start.type = BlockType.Text;
 						start.text = null;
 						start.attr = *paragraphAttr;
-						blocks = blocks[0..bi+1] ~ start ~ blocks[bi+1..$];
+						blocks.insertInPlace(bi+1, start);
 					}
 					paragraphAttr = &block.attr;
 				}
