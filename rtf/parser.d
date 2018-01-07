@@ -336,6 +336,7 @@ struct Parser
 				case "*":
 				case "pn":
 				case "pnlvlblt":
+				case "pnlvlcont":
 				case "pnf":
 				case "pnindent":
 					// Bullet list backwards compatibility
