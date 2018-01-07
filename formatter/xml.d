@@ -10,6 +10,7 @@ import ae.utils.xmlwriter;
 
 import rtf2any.common;
 import rtf2any.formatter.nested;
+import rtf2any.xml.common;
 import rtf2any.xml.writer;
 
 class XmlFormatter : NestedFormatter
@@ -27,7 +28,7 @@ class XmlFormatter : NestedFormatter
 		document.children ~= declNode;
 
 		auto rootNode = new XmlNode(XmlNodeType.Node, "document");
-		rootNode.attributes["xmlns"] = "https://github.com/CyberShadow/rtf2any/blob/master/xml/document.xsd";
+		rootNode.attributes["xmlns"] = presentationNamespace;
 		rootNode.attributes["title"] = title;
 		document.children ~= rootNode;
 		xmlStack ~= rootNode;
