@@ -383,6 +383,27 @@ struct Parser
 					block.attr.tabs = null;
 				haveTabStops[i] = false;
 			}
+			{
+				/// Maximum number of contiguous paragraphs that may
+				/// have useless tab stops.
+				enum maxParagraphs = 2;
+
+				size_t start = size_t.max;
+				foreach (i; 0..paragraphs.length)
+					if (haveTabStops[i] && !haveTabs[i])
+					{
+						if (start == size_t.max)
+							start = i;
+					}
+					else
+						if (start != size_t.max)
+						{
+							if (i - start > maxParagraphs)
+							foreach (n; start..i)
+								unmarkTabs(n);
+							start = size_t.max;
+						}
+			}
 			foreach (i; 1..paragraphs.length)
 				if (haveTabStops[i] && !haveTabStops[i-1] && !haveTabs[i])
 					unmarkTabs(i);
