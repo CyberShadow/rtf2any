@@ -78,6 +78,8 @@ string getCodePageName(uint codepage)
 			return "windows1252";
 		case 1253:
 			return "windows1253";
+		case CodePage.SYMBOL:
+			return "ascii8";
 		default:
 			throw new Exception("Unknown codepage: " ~ codepage.text);
 	}
