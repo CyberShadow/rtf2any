@@ -351,19 +351,23 @@ class NestedFormatter
 		{
 			blocks = blocks.dup;
 			BlockAttr* paragraphAttr;
+			void insertDummy(size_t index)
+			{
+				Block start;
+				start.type = BlockType.Text;
+				start.text = null;
+				start.attr = *paragraphAttr;
+				blocks.insertInPlace(index, start);
+				paragraphAttr = null;
+			}
 			foreach_reverse (bi, ref block; blocks)
 				if (block.type == BlockType.NewParagraph)
 				{
 					if (paragraphAttr)
-					{
-						Block start;
-						start.type = BlockType.Text;
-						start.text = null;
-						start.attr = *paragraphAttr;
-						blocks.insertInPlace(bi+1, start);
-					}
+						insertDummy(bi+1);
 					paragraphAttr = &block.attr;
 				}
+			insertDummy(0);
 		}
 	}
 
