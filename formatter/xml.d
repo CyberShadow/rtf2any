@@ -61,6 +61,9 @@ class XmlFormatter : NestedFormatter
 
 	override void addText(string text)
 	{
+		if (!text.length)
+			return;
+
 		auto node = new XmlNode(XmlNodeType.Text, text);
 		// auto node = new XmlNode(XmlNodeType.Node, "text");
 		// node.attributes["value"] = text;
