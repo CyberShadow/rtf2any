@@ -345,23 +345,39 @@ class NestedFormatter
 	static void preprocess(ref Block[] blocks)
 	{
 		// Duplicate the properties of paragraph and tab delimiters to
-		// their beginning as a fake text node, so that the list->tree
+		// their beginning as fake text nodes, so that the list->tree
 		// algorithm below promotes properties (e.g. font size) which
 		// correspond to the corresponding delimiter.
+
+		// Insert two nodes: the first with just the formatting
+		// properties and no paragraph / column index, and a second
+		// with the same formatting properties but with the paragraph
+		// / column index. This will coerce the list->tree algorithm
+		// to first process the formatting to the entire paragraph or
+		// row (i.e. incl. that of the terminating delimiter), and
+		// only then begin the paragraph/column node.
+
+		// Afterwards, strip the index from the delimiter itself, to
+		// ensure the formatting is extended across multiple
+		// paragraphs / columns.
+
 		{
 			blocks = blocks.dup;
 
 			size_t paragraphIdx = size_t.max;
 			size_t tabIdx = size_t.max;
-			void insertDummy(size_t index, ref size_t idx)
+			void insertDummy(size_t index, ref size_t idx, int* function(Block*) dg)
 			{
-				Block start;
-				start.type = BlockType.Text;
-				start.text = null;
-				start.attr = blocks[idx].attr;
-				blocks.insertInPlace(index, start);
-				if (paragraphIdx != size_t.max) paragraphIdx++;
-				if (tabIdx != size_t.max) tabIdx++;
+				Block[2] start;
+				start[0].type = BlockType.Text;
+				start[0].text = null;
+				start[0].attr = blocks[idx].attr;
+				start[1] = start[0];
+				*dg(&start[0]) = -1;
+				*dg(&blocks[idx]) = -1;
+				blocks.insertInPlace(index, start[]);
+				if (paragraphIdx != size_t.max) paragraphIdx += 2;
+				if (tabIdx != size_t.max) tabIdx += 2;
 				idx = size_t.max;
 			}
 			foreach_reverse (bi, ref block; blocks)
@@ -369,19 +385,19 @@ class NestedFormatter
 				if (block.type == BlockType.Tab || block.type == BlockType.NewParagraph)
 				{
 					if (tabIdx != size_t.max)
-						insertDummy(bi+1, tabIdx);
+						insertDummy(bi+1, tabIdx, b => &b.attr.columnIndex);
 					tabIdx = bi;
 				}
 				if (block.type == BlockType.NewParagraph)
 				{
 					if (paragraphIdx != size_t.max)
-						insertDummy(bi+1, paragraphIdx);
+						insertDummy(bi+1, paragraphIdx, b => &b.attr.paragraphIndex);
 					paragraphIdx = bi;
 					tabIdx = size_t.max;
 				}
 			}
 
-			insertDummy(0, paragraphIdx);
+			insertDummy(0, paragraphIdx, b => &b.attr.paragraphIndex);
 		}
 	}
 
