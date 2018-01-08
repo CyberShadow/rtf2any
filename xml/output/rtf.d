@@ -48,6 +48,7 @@ string toRTF(XmlDocument xml)
 	struct State
 	{
 		bool inListItem;
+		size_t columnCount;
 	}
 
 	void walk(XmlNode n, BlockAttr attr, State state)
@@ -181,14 +182,10 @@ string toRTF(XmlDocument xml)
 						attr.list = state.inListItem && listParagraphIndex == 0;
 						if (state.inListItem && listParagraphIndex)
 							attr.firstLineIndent = 0;
+						state.columnCount = n.countNodes("col");
 						break;
 					case "col":
 						attr.columnIndex = columnIndex++;
-						if (columnIndex > 1)
-						{
-							flushAttr();
-							rtf.putDir("tab");
-						}
 						break;
 					default:
 						throw new Exception("Unknown XML tag " ~ n.tag);
@@ -215,6 +212,13 @@ string toRTF(XmlDocument xml)
 						rtf.putDir("par");
 						rtf.newLine();
 						listParagraphIndex++;
+						break;
+					case "col":
+						if (columnIndex < state.columnCount)
+						{
+							flushAttr();
+							rtf.putDir("tab");
+						}
 						break;
 					case "document":
 						rtf.endGroup();
@@ -277,4 +281,11 @@ string toRTF(XmlDocument xml)
 	rtf.endGroup();
 
 	return rtf.buf.data.assumeUnique;
+}
+
+size_t countNodes(XmlNode n, string tag)
+{
+	if (n.type == XmlNodeType.Node && n.tag == tag)
+		return 1;
+	return n.children.map!(n => countNodes(n, tag)).sum;
 }
