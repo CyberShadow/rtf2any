@@ -5,6 +5,7 @@ import std.array;
 import std.conv;
 import std.string;
 import std.traits;
+import std.typecons;
 
 import ae.utils.array;
 import ae.utils.meta : enumLength;
@@ -344,30 +345,40 @@ class NestedFormatter
 
 	static void preprocess(ref Block[] blocks)
 	{
-		// Duplicate the properties of a paragraph's delimiter to its
-		// beginning as a fake text node, so that the list->tree
+		// Duplicate the properties of paragraph and tab delimiters to
+		// their beginning as a fake text node, so that the list->tree
 		// algorithm below promotes properties (e.g. font size) which
-		// correspond to the paragraph delimiter.
+		// correspond to the corresponding delimiter.
 		{
 			blocks = blocks.dup;
-			BlockAttr* paragraphAttr;
-			void insertDummy(size_t index)
+			Nullable!BlockAttr paragraphAttr, tabAttr;
+			void insertDummy(size_t index, ref Nullable!BlockAttr pAttr)
 			{
 				Block start;
 				start.type = BlockType.Text;
 				start.text = null;
-				start.attr = *paragraphAttr;
+				start.attr = pAttr;
 				blocks.insertInPlace(index, start);
-				paragraphAttr = null;
+				pAttr.nullify();
 			}
 			foreach_reverse (bi, ref block; blocks)
+			{
+				if (block.type == BlockType.Tab || block.type == BlockType.NewParagraph)
+				{
+					if (!tabAttr.isNull)
+						insertDummy(bi+1, tabAttr);
+					tabAttr = block.attr;
+				}
 				if (block.type == BlockType.NewParagraph)
 				{
-					if (paragraphAttr)
-						insertDummy(bi+1);
-					paragraphAttr = &block.attr;
+					if (!paragraphAttr.isNull)
+						insertDummy(bi+1, paragraphAttr);
+					paragraphAttr = block.attr;
+					tabAttr.nullify;
 				}
-			insertDummy(0);
+			}
+
+			insertDummy(0, paragraphAttr);
 		}
 	}
 
