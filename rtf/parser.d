@@ -252,7 +252,7 @@ struct Parser
 					preAppend();
 					BlockAttr parAttr = attr;
 					// discard some attributes for endlines
-					parAttr.bold = parAttr.italic = parAttr.underline = false;
+					parAttr.bold = parAttr.italic = parAttr.underline = false; // TODO: these shouldn't be discarded!
 					parAttr.subSuper = SubSuper.none;
 					parAttr.fontColor = defaultColor;
 					parAttr.columnIndex = -1;
