@@ -4,6 +4,7 @@ import std.conv;
 import std.string;
 import std.array;
 
+import ae.utils.array;
 import ae.utils.meta;
 import ae.utils.xmllite;
 import ae.utils.xmlwriter;
@@ -103,6 +104,8 @@ class XmlFormatter : NestedFormatter
 	{
 		assert(xmlStack[$-1].type == XmlNodeType.Node && xmlStack[$-1].tag == tag, "Closed tag mismatch");
 		assert(xmlStack[$-1].attributes == XmlAttributes(attrs), "Closed tag attribute mismatch");
+		if (!xmlStack[$-1].children.length && !tag.isOneOf("col", "p", "li"))
+			xmlStack[$-2].children = xmlStack[$-2].children[0..$-1];
 		xmlStack = xmlStack[0..$-1];
 	}
 
