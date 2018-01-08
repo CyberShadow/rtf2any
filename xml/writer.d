@@ -27,6 +27,11 @@ string writeRTFXML(XmlNode node)
 				writeChildren();
 				return;
 			case XmlNodeType.Node:
+				if (node.tag is null)
+				{
+					writeChildren();
+					return;
+				}
 				writer.startTagWithAttributes(node.tag);
 				writeAttributes();
 				if (node.children.length)
