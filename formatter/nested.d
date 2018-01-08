@@ -342,11 +342,8 @@ class NestedFormatter
 		}
 	}
 
-	string format()
+	static void preprocess(ref Block[] blocks)
 	{
-		Format[] stack;
-		s = null;
-
 		// Duplicate the properties of a paragraph's delimiter to its
 		// beginning as a fake text node, so that the list->tree
 		// algorithm below promotes properties (e.g. font size) which
@@ -368,6 +365,14 @@ class NestedFormatter
 					paragraphAttr = &block.attr;
 				}
 		}
+	}
+
+	string format()
+	{
+		Format[] stack;
+		s = null;
+
+		preprocess(blocks);
 
 		Format[] prevList;
 
