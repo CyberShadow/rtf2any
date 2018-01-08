@@ -410,15 +410,30 @@ class NestedFormatter
 
 		Format[] prevList;
 
+		import std.stdio : stderr;
+		debug enum debugBlockIndex = 99999999;
+
 		foreach (bi, ref block; blocks)
 		{
+			scope(failure) stderr.writefln("Error with block %d %s:", bi, block);
+			scope(failure) stderr.writeln("Stack: ", stack);
+
 			blockIndex = bi;
 
 			Format[] newList = attrToChanges(block.attr, prevList);
+			debug if (bi == debugBlockIndex)
+			{
+				stderr.writeln("block: ", block);
+				stderr.writeln("stack: ", stack);
+				stderr.writeln("prevList: ", prevList);
+				stderr.writeln("newList: ", newList);
+			}
 
 			// Gracious unwind (popping things off the top of the stack)
 			while (stack.length && !haveFormat(newList, stack[$-1]))
 			{
+				debug if (bi == debugBlockIndex)
+					stderr.writeln("removing format: ", stack[$-1]);
 				removeFormat(stack[$-1], blocks[bi-1]);
 				stack = stack[0..$-1];
 			}
@@ -431,6 +446,8 @@ class NestedFormatter
 					foreach (rf; stack[i+1..$])
 						if (haveFormat(newList, rf) && !canSplitFormat(rf))
 						{
+							debug if (bi == debugBlockIndex)
+								stderr.writeln("Can't split format ", rf, " for ", f);
 							canSplit = false;
 							break;
 						}
@@ -443,6 +460,8 @@ class NestedFormatter
 						foreach_reverse (rf; stack[i..$])
 							removeFormat(rf, blocks[bi-1]);
 						stack = stack[0..i];
+						debug if (bi == debugBlockIndex)
+							stderr.writeln("Unwound stack: ", stack);
 						break;
 					}
 					else
@@ -456,6 +475,8 @@ class NestedFormatter
 			foreach (f; newList)
 				if (haveActiveFormat(newList, f) && !haveActiveFormat(stack, f))
 				{
+					debug if (bi == debugBlockIndex)
+						stderr.writeln("Adding format: ", f);
 					stack ~= f;
 					addFormat(f, block);
 				}
@@ -484,6 +505,8 @@ class NestedFormatter
 			}
 
 			prevList = newList;
+			debug if (bi == debugBlockIndex)
+				stderr.writeln();
 		}
 
 		// close remaining tags
