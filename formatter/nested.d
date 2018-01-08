@@ -5,7 +5,6 @@ import std.array;
 import std.conv;
 import std.string;
 import std.traits;
-import std.typecons;
 
 import ae.utils.array;
 import ae.utils.meta : enumLength;
@@ -351,34 +350,38 @@ class NestedFormatter
 		// correspond to the corresponding delimiter.
 		{
 			blocks = blocks.dup;
-			Nullable!BlockAttr paragraphAttr, tabAttr;
-			void insertDummy(size_t index, ref Nullable!BlockAttr pAttr)
+
+			size_t paragraphIdx = size_t.max;
+			size_t tabIdx = size_t.max;
+			void insertDummy(size_t index, ref size_t idx)
 			{
 				Block start;
 				start.type = BlockType.Text;
 				start.text = null;
-				start.attr = pAttr;
+				start.attr = blocks[idx].attr;
 				blocks.insertInPlace(index, start);
-				pAttr.nullify();
+				if (paragraphIdx != size_t.max) paragraphIdx++;
+				if (tabIdx != size_t.max) tabIdx++;
+				idx = size_t.max;
 			}
 			foreach_reverse (bi, ref block; blocks)
 			{
 				if (block.type == BlockType.Tab || block.type == BlockType.NewParagraph)
 				{
-					if (!tabAttr.isNull)
-						insertDummy(bi+1, tabAttr);
-					tabAttr = block.attr;
+					if (tabIdx != size_t.max)
+						insertDummy(bi+1, tabIdx);
+					tabIdx = bi;
 				}
 				if (block.type == BlockType.NewParagraph)
 				{
-					if (!paragraphAttr.isNull)
-						insertDummy(bi+1, paragraphAttr);
-					paragraphAttr = block.attr;
-					tabAttr.nullify;
+					if (paragraphIdx != size_t.max)
+						insertDummy(bi+1, paragraphIdx);
+					paragraphIdx = bi;
+					tabIdx = size_t.max;
 				}
 			}
 
-			insertDummy(0, paragraphAttr);
+			insertDummy(0, paragraphIdx);
 		}
 	}
 
