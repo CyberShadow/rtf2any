@@ -94,9 +94,9 @@ struct Parser
 	Font[int] fonts;
 	int defaultCodepage;
 
-	void parse(Element[] elements, BlockAttr initAttr, Element[] stack)
+	void parse(Element[] elements, ref BlockAttr parentAttr, Element[] stack)
 	{
-		BlockAttr attr = initAttr;
+		BlockAttr attr = parentAttr;
 		// Parse special control words at the beginning of groups
 		if (elements.length && elements[0].type == ElementType.ControlWord)
 			switch (elements[0].word.word)
@@ -265,9 +265,9 @@ struct Parser
 					blocks ~= Block(BlockType.PageBreak);
 					break;
 				case "pard":
-					attr.leftIndent = initAttr.leftIndent;
-					attr.firstLineIndent = initAttr.firstLineIndent;
-					attr.tabs = initAttr.tabs;
+					attr.leftIndent = parentAttr.leftIndent;
+					attr.firstLineIndent = parentAttr.firstLineIndent;
+					attr.tabs = parentAttr.tabs;
 					attr.alignment = Alignment.left;
 					attr.list = false;
 					break;
