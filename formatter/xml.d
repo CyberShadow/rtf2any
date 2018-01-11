@@ -37,62 +37,13 @@ class XmlFormatter : NestedFormatter
 
 	XmlNode[] xmlStack;
 
-	/*
-	int listLevel, bulletPending;
-	bool inTable;
-
-	void pre()
-	{
-		if (bulletPending && listLevel)
-		{
-			if (!inTable)
-			{
-				foreach (i; 0..listLevel)
-					s ~= "*";
-				s ~= " ";
-			}
-			bulletPending = false;
-		}
-	}
-
-	@property bool paraStart() { return blockIndex==0 || blocks[blockIndex-1].type == BlockType.NewParagraph; }
-	@property bool paraEnd() { return blockIndex==blocks.length || blocks[blockIndex].type == BlockType.NewParagraph; }
-	*/
-
 	override void addText(string text)
 	{
 		if (!text.length)
 			return;
 
 		auto node = new XmlNode(XmlNodeType.Text, text);
-		// auto node = new XmlNode(XmlNodeType.Node, "text");
-		// node.attributes["value"] = text;
 		xmlStack[$-1].children ~= node;
-		// pre();
-		// if (inTable)
-		// 	text = text.replace("\t", " || ");
-		// s ~= text
-		// 	.replace("<", "&lt;")
-		// 	.replace(">", "&gt;")
-		// 	.replace("{{", "<nowiki>{{</nowiki>")
-		// 	.replace("}}", "<nowiki>}}</nowiki>")
-		// 	;
-	}
-
-	override void newParagraph()
-	{
-		// if (!inTable)
-		// 	s ~= "\n";
-		// else
-		// 	s ~= "\n|-\n| ";
-		// if (listLevel)
-		// 	bulletPending = true;
-		// xmlStack[$-1].children ~= new XmlNode(XmlNodeType.Node, "par");
-	}
-
-	override void addBullet()
-	{
-		xmlStack[$-1].children ~= new XmlNode(XmlNodeType.Node, "bullet");
 	}
 
 	private void addTag(string tag, string[string] attrs = null)
@@ -157,7 +108,6 @@ class XmlFormatter : NestedFormatter
 private string[string] fontAttr(Font* font)
 {
 	return [
-	//	"index" : font.index.text,
 		"family" : font.family,
 		"name" : font.name,
 		"pitch" : font.pitch.text,

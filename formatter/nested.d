@@ -196,7 +196,6 @@ class NestedFormatter
 	}
 
 	abstract void addText(string s);
-	void addBullet() {}
 	void newParagraph() {}
 	void newPage() {}
 
