@@ -144,9 +144,9 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 						hn = new XmlNode(XmlNodeType.Node, state.inParagraph ? "span" : "div");
 						hn.attributes["style"] = "color: " ~ n.attributes.aaGet("rgb");
 						break;
-					case "a":
+					case "hyperlink":
 						hn = new XmlNode(XmlNodeType.Node, "a");
-						hn.attributes["href"] = n.attributes.aaGet("href");
+						hn.attributes["href"] = n.attributes.aaGet("url");
 						break;
 					case "tabs":
 						hn = new XmlNode(XmlNodeType.Node, "table");

@@ -13,7 +13,7 @@
       <xs:element name="color" type="colorType" />
       <xs:element name="indent" type="indentType" />
       <xs:element name="align" type="alignType" />
-      <xs:element name="a" type="aType" />
+      <xs:element name="hyperlink" type="hyperlinkType" />
       <xs:element name="col" type="nodeType" />
       <xs:element name="p" type="nodeType" />
       <xs:element name="li" type="nodeType" />
@@ -77,9 +77,9 @@
     <xs:attribute name="dir" type="dirType" />
   </xs:complexType>
 
-  <xs:complexType name="aType" mixed="true">
+  <xs:complexType name="hyperlinkType" mixed="true">
     <xs:group ref="nodes" />
-    <xs:attribute name="href" />
+    <xs:attribute name="url" />
   </xs:complexType>
 
   <xs:complexType name="nodeType" mixed="true">

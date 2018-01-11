@@ -182,8 +182,8 @@ string toRTF(XmlDocument xml)
 						attr.fontColor = s.to!int(16);
 						break;
 					}
-					case "a":
-						attr.href = n.attributes.aaGet("href");
+					case "hyperlink":
+						attr.href = n.attributes.aaGet("url");
 						break;
 					case "tabs":
 						attr.tabs = n.attributes.aaGet("stops").split(",").map!(to!int).array;
