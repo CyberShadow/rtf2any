@@ -207,8 +207,6 @@ struct Parser
 				blocks ~= Block(BlockType.Text, attr, e.text);
 				break;
 			case ElementType.Group:
-				if (e.type == ElementType.Group && e.group[0].word.word == "*")
-					attr.list = true;
 				parse(e.group, attr, stack ~ e);
 				break;
 			case ElementType.ControlWord:
@@ -335,13 +333,15 @@ struct Parser
 				case "nosupersub":
 					attr.subSuper = SubSuper.none;
 					break;
-				case "*":
 				case "pn":
+					parentAttr.list = true;
+					break;
+				case "*":
 				case "pnlvlblt":
 				case "pnlvlcont":
 				case "pnf":
 				case "pnindent":
-					// Bullet list backwards compatibility
+					// Bullet list properties
 					break;
 				case "lang":
 					// Semantic-only?
