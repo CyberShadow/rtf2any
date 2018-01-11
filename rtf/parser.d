@@ -349,8 +349,20 @@ struct Parser
 				case "ri":
 					// Right-align - unsupported
 					break;
+				case "field":
+				case "fldrslt":
+					break;
+				case "fldinst":
+					if (elements.length > i+1 && elements[i+1].type == ElementType.Text)
+					{
+						auto value = elements[i+1].text;
+						if (value.skipOver("HYPERLINK \"") && value[$-1] == '"')
+							parentAttr.href = value[0..$-1];
+						return;
+					}
+					break;
 				default:
-					throw new Exception("Unknown XML control word: " ~ e.word.word);
+					throw new Exception("Unknown RTF control word: " ~ e.word.word);
 				}
 				break;
 			}

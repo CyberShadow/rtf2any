@@ -33,6 +33,7 @@ class NestedFormatter
 			font,
 			fontSize,
 			fontColor,
+			hyperlink,
 			tabs,
 		}
 		Type type;
@@ -69,6 +70,9 @@ class NestedFormatter
 		/// Type.tabs
 		int[] tabs;
 
+		/// Type.hyperlink
+		string href;
+
 		string toString() const
 		{
 			final switch (type)
@@ -93,6 +97,8 @@ class NestedFormatter
 					return .format("Font size %d", fontSize);
 				case Format.Type.fontColor:
 					return .format("Font color #%06x", fontColor);
+				case Format.Type.hyperlink:
+					return .format("Hyperlink %(%s%)", href);
 				case Format.Type.tabs:
 					return .format("Tab count %d", tabs.length);
 				case Format.Type.listItem:
@@ -146,6 +152,8 @@ class NestedFormatter
 			list ~= args!(Format, type => Format.Type.alignment, alignment => attr.alignment);
 		if (attr.fontColor != defaultColor)
 			list ~= args!(Format, type => Format.Type.fontColor, fontColor => attr.fontColor);
+		if (attr.href)
+			list ~= args!(Format, type => Format.Type.hyperlink, href => attr.href);
 		if (attr.paragraphIndex >= 0)
 			list ~= args!(Format, type => Format.Type.paragraph, paragraphIndex => attr.paragraphIndex);
 		if (attr.columnIndex >= 0)
@@ -212,6 +220,7 @@ class NestedFormatter
 	void addInParagraph(int index, bool list) {}
 	void addInListItem(int index) {}
 	void addInColumn(int index) {}
+	void addHyperlink(string href) {}
 	
 	void removeBold() {}
 	void removeItalic() {}
@@ -226,6 +235,7 @@ class NestedFormatter
 	void removeInParagraph(int index, bool list) {}
 	void removeInListItem(int index) {}
 	void removeInColumn(int index) {}
+	void removeHyperlink(string href) {}
 
 	void flush() {}
 
@@ -275,6 +285,9 @@ class NestedFormatter
 			case Format.Type.column:
 				addInColumn(f.columnIndex);
 				break;
+			case Format.Type.hyperlink:
+				addHyperlink(f.href);
+				break;
 		}
 	}
 	
@@ -323,6 +336,9 @@ class NestedFormatter
 				break;
 			case Format.Type.column:
 				removeInColumn(f.columnIndex);
+				break;
+			case Format.Type.hyperlink:
+				removeHyperlink(f.href);
 				break;
 		}
 	}

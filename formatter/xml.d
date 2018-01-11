@@ -81,6 +81,7 @@ class XmlFormatter : NestedFormatter
 	override void addInParagraph(int index, bool list) { assert(index == ++lastParagraphIndex); assert(!inParagraph); inParagraph = true; addTag("p"); }
 	override void addInListItem(int index) { assert(!inParagraph); addTag("li"); }
 	override void addInColumn(int index) { addTag("col"); }
+	override void addHyperlink(string href) { addTag("a", ["href":href]); }
 
 	override void removeBold() { removeTag("b"); }
 	override void removeItalic() { removeTag("i"); }
@@ -95,6 +96,7 @@ class XmlFormatter : NestedFormatter
 	override void removeInParagraph(int index, bool list) { assert(index == lastParagraphIndex); assert(inParagraph); inParagraph = false; removeTag("p"); }
 	override void removeInListItem(int index) { removeTag("li"); }
 	override void removeInColumn(int index) { removeTag("col"); }
+	override void removeHyperlink(string href) { removeTag("a", ["href":href]); }
 
 	override void flush()
 	{
