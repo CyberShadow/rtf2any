@@ -144,6 +144,10 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 						hn = new XmlNode(XmlNodeType.Node, state.inParagraph ? "span" : "div");
 						hn.attributes["style"] = "color: " ~ n.attributes.aaGet("rgb");
 						break;
+					case "a":
+						hn = new XmlNode(XmlNodeType.Node, "a");
+						hn.attributes["href"] = n.attributes.aaGet("href");
+						break;
 					case "tabs":
 						hn = new XmlNode(XmlNodeType.Node, "table");
 						state.columns = n.attributes.aaGet("stops").split(",").amap!(to!int);

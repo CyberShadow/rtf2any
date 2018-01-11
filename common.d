@@ -47,6 +47,7 @@ struct BlockAttr
 	int[] tabs; /// in twips
 	int paragraphIndex, columnIndex, listItemIndex;
 	Font* font;
+	string href;
 
 	string toString()
 	{
@@ -65,6 +66,7 @@ struct BlockAttr
 		if (paragraphIndex >= 0) attrs ~= format("paragraphIndex=%d", paragraphIndex);
 		if (columnIndex >= 0) attrs ~= format("columnIndex=%d", columnIndex);
 		if (listItemIndex >= 0) attrs ~= format("listItemIndex=%d", listItemIndex);
+		if (href) attrs ~= format("href=%(%s%)", [href]);
 		return "[" ~ join(attrs, " ") ~ "]";
 	}
 }

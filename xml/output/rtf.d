@@ -68,6 +68,19 @@ string toRTF(XmlDocument xml)
 				oldAttr.list = false;
 				attrInitialized = true;
 			}
+			if (attr.href && !oldAttr.href)
+			{
+				// {\field{\*\fldinst HYPERLINK "http://www.google.com/"}{\fldrslt http://www.google.com}}
+				rtf.beginGroup();
+				rtf.putDir("field");
+				rtf.beginGroup();
+				rtf.putDir("*");
+				rtf.putDir("fldinst");
+				rtf.putText("HYPERLINK \"" ~ attr.href ~ "\"");
+				rtf.endGroup();
+				rtf.beginGroup();
+				rtf.putDir("fldrslt");
+			}
 			if (attr.bold != oldAttr.bold)
 				rtf.putDir(attr.bold ? "b" : "b0");
 			if (attr.italic != oldAttr.italic)
@@ -112,6 +125,11 @@ string toRTF(XmlDocument xml)
 					rtf.putDir("tx", tab);
 			if ((attr.font?*attr.font:Font.init) != (oldAttr.font?*oldAttr.font:Font.init))
 				rtf.putDir("f", registerFont(attr.font));
+			if (!attr.href && oldAttr.href)
+			{
+				rtf.endGroup();
+				rtf.endGroup();
+			}
 			oldAttr = attr;
 		}
 
@@ -164,6 +182,9 @@ string toRTF(XmlDocument xml)
 						attr.fontColor = s.to!int(16);
 						break;
 					}
+					case "a":
+						attr.href = n.attributes.aaGet("href");
+						break;
 					case "tabs":
 						attr.tabs = n.attributes.aaGet("stops").split(",").map!(to!int).array;
 						break;
