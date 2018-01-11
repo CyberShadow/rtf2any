@@ -14,6 +14,7 @@
       <xs:element name="indent" type="indentType" />
       <xs:element name="align" type="alignType" />
       <xs:element name="hyperlink" type="hyperlinkType" />
+      <xs:element name="local-link" type="local-linkType" />
       <xs:element name="col" type="nodeType" />
       <xs:element name="p" type="nodeType" />
       <xs:element name="li" type="nodeType" />
@@ -35,6 +36,7 @@
 
   <xs:complexType name="fontType" mixed="true">
     <xs:group ref="nodes" />
+    <xs:attribute name="id" />
     <xs:attribute name="name" />
     <xs:attribute name="family" />
     <xs:attribute name="pitch" type="xs:integer" />
@@ -43,21 +45,25 @@
 
   <xs:complexType name="sizeType" mixed="true">
     <xs:group ref="nodes" />
+    <xs:attribute name="id" />
     <xs:attribute name="pt" type="xs:integer" />
   </xs:complexType>
 
   <xs:complexType name="tabsType" mixed="true">
     <xs:group ref="nodes" />
+    <xs:attribute name="id" />
     <xs:attribute name="stops" />
   </xs:complexType>
 
   <xs:complexType name="colorType" mixed="true">
     <xs:group ref="nodes" />
+    <xs:attribute name="id" />
     <xs:attribute name="rgb" />
   </xs:complexType>
 
   <xs:complexType name="indentType" mixed="true">
     <xs:group ref="nodes" />
+    <xs:attribute name="id" />
     <xs:attribute name="left" type="xs:integer" />
     <xs:attribute name="first-line" type="xs:integer" />
     <xs:attribute name="list" type="xs:boolean" />
@@ -74,16 +80,25 @@
 
   <xs:complexType name="alignType" mixed="true">
     <xs:group ref="nodes" />
+    <xs:attribute name="id" />
     <xs:attribute name="dir" type="dirType" />
   </xs:complexType>
 
   <xs:complexType name="hyperlinkType" mixed="true">
     <xs:group ref="nodes" />
+    <xs:attribute name="id" />
     <xs:attribute name="url" />
+  </xs:complexType>
+
+  <xs:complexType name="local-linkType" mixed="true">
+    <xs:group ref="nodes" />
+    <xs:attribute name="id" />
+    <xs:attribute name="target-id" />
   </xs:complexType>
 
   <xs:complexType name="nodeType" mixed="true">
     <xs:group ref="nodes" />
+    <xs:attribute name="id" />
   </xs:complexType>
 
   <xs:complexType name="documentType">

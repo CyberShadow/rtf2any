@@ -148,6 +148,10 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 						hn = new XmlNode(XmlNodeType.Node, "a");
 						hn.attributes["href"] = n.attributes.aaGet("url");
 						break;
+					case "local-link":
+						hn = new XmlNode(XmlNodeType.Node, "a");
+						hn.attributes["href"] = "#" ~ n.attributes.aaGet("target-id");
+						break;
 					case "tabs":
 						hn = new XmlNode(XmlNodeType.Node, "table");
 						state.columns = n.attributes.aaGet("stops").split(",").amap!(to!int);
@@ -184,6 +188,8 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 					default:
 						throw new Exception("Unknown XML tag " ~ n.tag);
 				}
+				if ("id" in n.attributes)
+					hn.attributes["id"] = n.attributes["id"];
 				break;
 			case XmlNodeType.Text:
 				hn = new XmlNode(XmlNodeType.Text, n.tag);
@@ -232,10 +238,21 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 			assert(target.type == XmlNodeType.Node);
 			if (target.tag == "table" && "padding-left" in styleMap)
 				return false;
+
+			auto ids = sources
+				.map!(source => source.attributes.get("id", null))
+				.filter!identity
+				.array;
+			if (ids.length > 1)
+				return false;
+
 			string[] values;
 			foreach (name, value; styleMap)
 				values ~= name ~ ": " ~ value;
 			target.attributes["style"] = values.join("; ");
+			if (ids.length)
+				target.attributes["id"] = ids[0];
+
 			return true;
 		}
 

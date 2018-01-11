@@ -48,6 +48,7 @@ struct BlockAttr
 	int paragraphIndex, columnIndex, listItemIndex;
 	Font* font;
 	string href;
+	string id, lref;
 
 	string toString()
 	{
@@ -67,6 +68,8 @@ struct BlockAttr
 		if (columnIndex >= 0) attrs ~= format("columnIndex=%d", columnIndex);
 		if (listItemIndex >= 0) attrs ~= format("listItemIndex=%d", listItemIndex);
 		if (href) attrs ~= format("href=%(%s%)", [href]);
+		if (id) attrs ~= format("id=%(%s%)", [id]);
+		if (lref) attrs ~= format("lref=%(%s%)", [lref]);
 		return "[" ~ join(attrs, " ") ~ "]";
 	}
 }

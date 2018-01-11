@@ -70,16 +70,35 @@ string toRTF(XmlDocument xml)
 			}
 			if (attr.href && !oldAttr.href)
 			{
-				// {\field{\*\fldinst HYPERLINK "http://www.google.com/"}{\fldrslt http://www.google.com}}
 				rtf.beginGroup();
 				rtf.putDir("field");
 				rtf.beginGroup();
 				rtf.putDir("*");
 				rtf.putDir("fldinst");
-				rtf.putText("HYPERLINK \"" ~ attr.href ~ "\"");
+				rtf.putText(`HYPERLINK "` ~ attr.href ~ `"`);
 				rtf.endGroup();
 				rtf.beginGroup();
 				rtf.putDir("fldrslt");
+			}
+			if (attr.lref && !oldAttr.lref)
+			{
+				rtf.beginGroup();
+				rtf.putDir("field");
+				rtf.beginGroup();
+				rtf.putDir("*");
+				rtf.putDir("fldinst");
+				rtf.putText(`HYPERLINK \l "` ~ attr.lref ~ `"`);
+				rtf.endGroup();
+				rtf.beginGroup();
+				rtf.putDir("fldrslt");
+			}
+			if (attr.id && !oldAttr.id)
+			{
+				rtf.beginGroup();
+				rtf.putDir("*");
+				rtf.putDir("bkmkstart");
+				rtf.putText(attr.id);
+				rtf.endGroup();
 			}
 			if (attr.bold != oldAttr.bold)
 				rtf.putDir(attr.bold ? "b" : "b0");
@@ -125,6 +144,19 @@ string toRTF(XmlDocument xml)
 					rtf.putDir("tx", tab);
 			if ((attr.font?*attr.font:Font.init) != (oldAttr.font?*oldAttr.font:Font.init))
 				rtf.putDir("f", registerFont(attr.font));
+			if (!attr.id && oldAttr.id)
+			{
+				rtf.beginGroup();
+				rtf.putDir("*");
+				rtf.putDir("bkmkend");
+				rtf.putText(oldAttr.id);
+				rtf.endGroup();
+			}
+			if (!attr.lref && oldAttr.lref)
+			{
+				rtf.endGroup();
+				rtf.endGroup();
+			}
 			if (!attr.href && oldAttr.href)
 			{
 				rtf.endGroup();
@@ -136,6 +168,8 @@ string toRTF(XmlDocument xml)
 		switch (n.type)
 		{
 			case XmlNodeType.Node:
+				if ("id" in n.attributes)
+					attr.id = n.attributes["id"];
 				switch (n.tag)
 				{
 					case "document":
@@ -184,6 +218,9 @@ string toRTF(XmlDocument xml)
 					}
 					case "hyperlink":
 						attr.href = n.attributes.aaGet("url");
+						break;
+					case "local-link":
+						attr.lref = n.attributes.aaGet("target-id");
 						break;
 					case "tabs":
 						attr.tabs = n.attributes.aaGet("stops").split(",").map!(to!int).array;
