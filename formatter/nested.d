@@ -151,8 +151,7 @@ class NestedFormatter
 			list ~= args!(Format, type => Format.Type.tabs, tabs => attr.tabs);
 		if (attr.alignment)
 			list ~= args!(Format, type => Format.Type.alignment, alignment => attr.alignment);
-		if (attr.fontColor != defaultColor)
-			list ~= args!(Format, type => Format.Type.fontColor, fontColor => attr.fontColor);
+		list ~= args!(Format, type => Format.Type.fontColor, fontColor => attr.fontColor);
 		if (attr.href)
 			list ~= args!(Format, type => Format.Type.hyperlink, href => attr.href);
 		if (attr.paragraphIndex >= 0)
@@ -408,6 +407,7 @@ class NestedFormatter
 	string format()
 	{
 		static immutable Format[] defaultStack = [
+			{ type : Format.Type.fontColor, fontColor : defaultColor },
 			{ type : Format.Type.bold     , enabled : false },
 			{ type : Format.Type.italic   , enabled : false },
 			{ type : Format.Type.underline, enabled : false },

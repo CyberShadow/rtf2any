@@ -209,8 +209,13 @@ string toRTF(XmlDocument xml)
 					case "color":
 					{
 						auto s = n.attributes.aaGet("rgb");
-						enforce(s.skipOver("#"));
-						attr.fontColor = s.to!int(16);
+						if (s == "default")
+							attr.fontColor = defaultColor;
+						else
+						{
+							enforce(s.skipOver("#"));
+							attr.fontColor = s.to!int(16);
+						}
 						break;
 					}
 					case "hyperlink":

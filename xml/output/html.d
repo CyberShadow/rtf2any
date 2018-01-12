@@ -153,9 +153,12 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 						hn.attributes["style"] = "font-size: " ~ (n.attributes.aaGet("pt").to!float / 2).text ~ "pt";
 						break;
 					case "color":
+					{
 						hn = new XmlNode(XmlNodeType.Node, state.inParagraph ? "span" : "div");
-						hn.attributes["style"] = "color: " ~ n.attributes.aaGet("rgb");
+						auto rgb = n.attributes.aaGet("rgb");
+						hn.attributes["style"] = "color: " ~ (rgb == "default" ? "initial" :rgb);
 						break;
+					}
 					case "hyperlink":
 						hn = new XmlNode(XmlNodeType.Node, "a");
 						hn.attributes["href"] = n.attributes.aaGet("url");
@@ -242,6 +245,7 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 						}
 						case "font-size":
 						case "text-decoration":
+						case "color":
 							styleMap[style[0]] = style[1];
 							break;
 						default:

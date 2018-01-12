@@ -77,7 +77,7 @@ class XmlFormatter : NestedFormatter
 	override void addIndent(int left, int firstLine, bool list) { assert(!inParagraph); addTag("indent", ["left":left.text, "first-line":firstLine.text, "list":list.text]); }
 	override void addFont(Font* font) { addTag("font", font.fontAttr); }
 	override void addFontSize(int size) { addTag("size", ["pt":size.text]); }
-	override void addFontColor(int color) { addTag("color", ["rgb":"#%06x".format(color)]); }
+	override void addFontColor(int color) { addTag("color", ["rgb":color==defaultColor?"default":"#%06x".format(color)]); }
 	override void addTabs(int[] tabs) { assert(!inParagraph); addTag("tabs", ["stops":"%(%d,%)".format(tabs)]); }
 	override void addInParagraph(int index, bool list) { assert(index == ++lastParagraphIndex); assert(!inParagraph); inParagraph = true; addTag("p"); }
 	override void addInListItem(int index) { assert(!inParagraph); addTag("li"); }
@@ -92,7 +92,7 @@ class XmlFormatter : NestedFormatter
 	override void removeIndent(int left, int firstLine, bool list) { removeTag("indent", ["left":left.text, "first-line":firstLine.text, "list":list.text]); }
 	override void removeFont(Font* font) { removeTag("font", font.fontAttr); }
 	override void removeFontSize(int size) { removeTag("size", ["pt":size.text]); }
-	override void removeFontColor(int color) { removeTag("color", ["rgb":"#%06x".format(color)]); }
+	override void removeFontColor(int color) { removeTag("color", ["rgb":color==defaultColor?"default":"#%06x".format(color)]); }
 	override void removeTabs(int[] tabs) { removeTag("tabs", ["stops":"%(%d,%)".format(tabs)]); }
 	override void removeInParagraph(int index, bool list) { assert(index == lastParagraphIndex); assert(inParagraph); inParagraph = false; removeTag("p"); }
 	override void removeInListItem(int index) { removeTag("li"); }
