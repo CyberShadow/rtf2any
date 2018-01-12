@@ -25,6 +25,7 @@ string toHTML(XmlDocument xml)
 		int[] columns;
 		bool inParagraph;
 		int leftIndent, firstLineIndent;
+		bool firstLineIndentPending;
 	}
 
 	uint colNum;
@@ -141,7 +142,8 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 						if (leftIndent)
 							hn.attributes["style"] = "margin-left: " ~ (leftIndent / 20.0).text ~ "pt";
 						state.leftIndent = left;
-						state.firstLineIndent = list ? 0 : firstLine;
+						state.firstLineIndent = firstLine;
+						state.firstLineIndentPending = firstLine && !list;
 						break;
 					}
 					case "font":
@@ -173,10 +175,10 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 						auto stops = n.attributes.aaGet("stops");
 						state.columns = stops.length ? stops.split(",").map!(to!int).array : emptySlice!int;
 						state.inTable = true;
-						if (state.firstLineIndent)
+						if (state.firstLineIndentPending)
 						{
 							hn.attributes["style"] = "margin-left: " ~ (state.firstLineIndent / 20.0).text ~ "pt";
-							state.firstLineIndent = 0;
+							state.firstLineIndentPending = false;
 						}
 						//state.firstLineIndent = 0;
 						break;
@@ -188,17 +190,17 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 						hn = new XmlNode(XmlNodeType.Node, state.inTable ? "tr" : "p");
 						colNum = 0;
 						state.inParagraph = true;
-						if (!state.inTable && state.firstLineIndent)
+						if (!state.inTable && state.firstLineIndentPending)
 						{
 							hn.attributes["style"] = "text-indent: " ~ (state.firstLineIndent / 20.0).text ~ "pt";
-							state.firstLineIndent = 0;
+							state.firstLineIndentPending = false;
 						}
 						break;
 					case "col":
 						hn = new XmlNode(XmlNodeType.Node, "td");
 						if (colNum < state.columns.length)
 						{
-							auto width = state.columns[colNum] - (colNum ? state.columns[colNum-1] : 0);
+							auto width = state.columns[colNum] - (colNum ? state.columns[colNum-1] : state.leftIndent + state.firstLineIndent);
 							hn.attributes["style"] = "width: " ~ text(width / 20.0) ~ "pt";
 						}
 						colNum++;
