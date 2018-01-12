@@ -223,8 +223,11 @@ string toRTF(XmlDocument xml)
 						attr.lref = n.attributes.aaGet("target-id");
 						break;
 					case "tabs":
-						attr.tabs = n.attributes.aaGet("stops").split(",").map!(to!int).array;
+					{
+						auto stops = n.attributes.aaGet("stops");
+						attr.tabs = stops.length ? stops.split(",").map!(to!int).array : emptySlice!int;
 						break;
+					}
 					case "li":
 						state.inListItem = true;
 						listParagraphIndex = 0;

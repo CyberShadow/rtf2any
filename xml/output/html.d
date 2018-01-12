@@ -153,8 +153,10 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 						hn.attributes["href"] = "#" ~ n.attributes.aaGet("target-id");
 						break;
 					case "tabs":
+					{
 						hn = new XmlNode(XmlNodeType.Node, "table");
-						state.columns = n.attributes.aaGet("stops").split(",").amap!(to!int);
+						auto stops = n.attributes.aaGet("stops");
+						state.columns = stops.length ? stops.split(",").map!(to!int).array : emptySlice!int;
 						state.inTable = true;
 						if (state.firstLineIndent)
 						{
@@ -163,6 +165,7 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 						}
 						//state.firstLineIndent = 0;
 						break;
+					}
 					case "li":
 						hn = new XmlNode(XmlNodeType.Node, "li");
 						break;
