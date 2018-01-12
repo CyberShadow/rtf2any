@@ -337,9 +337,10 @@ class NestedFormatter
 		{
 			case Format.Type.paragraph:
 			case Format.Type.column:
-			case Format.Type.indent:
 			case Format.Type.listItem:
 				return false;
+			case Format.Type.indent:
+				return !f.list;
 			default:
 				return true;
 		}
