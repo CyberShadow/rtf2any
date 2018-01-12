@@ -101,7 +101,7 @@ class NestedFormatter
 				case Format.Type.hyperlink:
 					return .format("Hyperlink %(%s%)", href);
 				case Format.Type.tabs:
-					return .format("Tab count %d", tabs.length);
+					return .format("Tabs [%(%d,%)]", tabs);
 				case Format.Type.listItem:
 					return .format("List item %d", listItemIndex);
 				case Format.Type.paragraph:
