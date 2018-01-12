@@ -412,11 +412,11 @@ struct Parser
 							start = size_t.max;
 						}
 			}
-			foreach (i; 1..paragraphs.length)
-				if (haveTabStops[i] && !haveTabStops[i-1] && !haveTabs[i])
+			foreach (i; 0..paragraphs.length)
+				if (haveTabStops[i] && (i == 0 || !haveTabStops[i-1]) && !haveTabs[i])
 					unmarkTabs(i);
-			foreach_reverse (i; 0..paragraphs.length-1)
-				if (haveTabStops[i] && !haveTabStops[i+1] && !haveTabs[i])
+			foreach_reverse (i; 0..paragraphs.length)
+				if (haveTabStops[i] && (i+1 == paragraphs.length || !haveTabStops[i+1]) && !haveTabs[i])
 					unmarkTabs(i);
 
 			// Paint paragraphs that have tabs but not tab stops
