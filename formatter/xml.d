@@ -48,6 +48,7 @@ class XmlFormatter : NestedFormatter
 
 	private void addTag(string tag, string[string] attrs = null)
 	{
+		assert(tag.length);
 		auto node = new XmlNode(XmlNodeType.Node, tag);
 		node.attributes = XmlAttributes(attrs);
 		xmlStack[$-1].children ~= node;
@@ -68,9 +69,9 @@ class XmlFormatter : NestedFormatter
 	int lastParagraphIndex = -1;
 	bool inParagraph;
 
-	override void addBold() { addTag("b"); }
-	override void addItalic() { addTag("i"); }
-	override void addUnderline() { addTag("u"); }
+	override void addBold(bool enabled) { addTag(enabled ? "b" : "no-b"); }
+	override void addItalic(bool enabled) { addTag(enabled ? "i" : "no-i"); }
+	override void addUnderline(bool enabled) { addTag(enabled ? "u" : "no-u"); }
 	override void addAlignment(Alignment a) { assert(!inParagraph); addTag("align", ["dir":a.text]); }
 	override void addSubSuper(SubSuper subSuper) { addTag(subSuperTag[subSuper]); }
 	override void addIndent(int left, int firstLine, bool list) { assert(!inParagraph); addTag("indent", ["left":left.text, "first-line":firstLine.text, "list":list.text]); }
@@ -83,9 +84,9 @@ class XmlFormatter : NestedFormatter
 	override void addInColumn(int index) { addTag("col"); }
 	override void addHyperlink(string href) { addTag("hyperlink", ["url":href]); }
 
-	override void removeBold() { removeTag("b"); }
-	override void removeItalic() { removeTag("i"); }
-	override void removeUnderline() { removeTag("u"); }
+	override void removeBold(bool enabled) { removeTag(enabled ? "b" : "no-b"); }
+	override void removeItalic(bool enabled) { removeTag(enabled ? "i" : "no-i"); }
+	override void removeUnderline(bool enabled) { removeTag(enabled ? "u" : "no-u"); }
 	override void removeAlignment(Alignment a) { removeTag("align", ["dir":a.text]); }
 	override void removeSubSuper(SubSuper subSuper) { removeTag(subSuperTag[subSuper]); }
 	override void removeIndent(int left, int firstLine, bool list) { removeTag("indent", ["left":left.text, "first-line":firstLine.text, "list":list.text]); }

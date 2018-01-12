@@ -37,10 +37,11 @@ class NestedFormatter
 		}
 		Type type;
 
-		this(Type type) { this.type = type; }
-
 		union
 		{
+			/// Type.bold / italic / underline
+			bool enabled;
+
 			/// Type.subSuper
 			SubSuper subSuper;
 
@@ -158,14 +159,10 @@ class NestedFormatter
 			list ~= args!(Format, type => Format.Type.paragraph, paragraphIndex => attr.paragraphIndex);
 		if (attr.columnIndex >= 0)
 			list ~= args!(Format, type => Format.Type.column, columnIndex => attr.columnIndex);
-		if (attr.bold)
-			list ~= Format(Format.Type.bold);
-		if (attr.italic)
-			list ~= Format(Format.Type.italic);
-		if (attr.underline)
-			list ~= Format(Format.Type.underline);
-		if (attr.subSuper)
-			list ~= args!(Format, type => Format.Type.subSuper, subSuper => attr.subSuper);
+		list ~= args!(Format, type => Format.Type.bold, enabled => attr.bold);
+		list ~= args!(Format, type => Format.Type.italic, enabled => attr.italic);
+		list ~= args!(Format, type => Format.Type.underline, enabled => attr.underline);
+		list ~= args!(Format, type => Format.Type.subSuper, subSuper => attr.subSuper);
 		return list;
 	}
 
@@ -205,9 +202,9 @@ class NestedFormatter
 	void newParagraph() {}
 	void newPage() {}
 
-	void addBold() {}
-	void addItalic() {}
-	void addUnderline() {}
+	void addBold(bool enabled) {}
+	void addItalic(bool enabled) {}
+	void addUnderline(bool enabled) {}
 	void addAlignment(Alignment alignment) {}
 	void addSubSuper(SubSuper subSuper) {}
 	void addIndent(int left, int firstLine, bool list) {}
@@ -220,9 +217,9 @@ class NestedFormatter
 	void addInColumn(int index) {}
 	void addHyperlink(string href) {}
 	
-	void removeBold() {}
-	void removeItalic() {}
-	void removeUnderline() {}
+	void removeBold(bool enabled) {}
+	void removeItalic(bool enabled) {}
+	void removeUnderline(bool enabled) {}
 	void removeAlignment(Alignment alignment) {}
 	void removeSubSuper(SubSuper subSuper) {}
 	void removeIndent(int left, int firstLine, bool list) {}
@@ -242,13 +239,13 @@ class NestedFormatter
 		final switch (f.type)
 		{
 			case Format.Type.bold:
-				addBold();
+				addBold(f.enabled);
 				break;
 			case Format.Type.italic:
-				addItalic();
+				addItalic(f.enabled);
 				break;
 			case Format.Type.underline:
-				addUnderline();
+				addUnderline(f.enabled);
 				break;
 			case Format.Type.alignment:
 				addAlignment(f.alignment);
@@ -291,13 +288,13 @@ class NestedFormatter
 		final switch (f.type)
 		{
 			case Format.Type.bold:
-				removeBold();
+				removeBold(f.enabled);
 				break;
 			case Format.Type.italic:
-				removeItalic();
+				removeItalic(f.enabled);
 				break;
 			case Format.Type.underline:
-				removeUnderline();
+				removeUnderline(f.enabled);
 				break;
 			case Format.Type.alignment:
 				removeAlignment(f.alignment);
@@ -410,7 +407,13 @@ class NestedFormatter
 
 	string format()
 	{
-		Format[] stack;
+		static immutable Format[] defaultStack = [
+			{ type : Format.Type.bold     , enabled : false },
+			{ type : Format.Type.italic   , enabled : false },
+			{ type : Format.Type.underline, enabled : false },
+			{ type : Format.Type.subSuper , subSuper : SubSuper.none },
+		];
+		Format[] stack = (cast(Format[])defaultStack).dup;
 		s = null;
 
 		preprocess(blocks);
@@ -447,7 +450,7 @@ class NestedFormatter
 
 			// Brutal unwind (popping things out from the middle of the stack)
 			foreach (i, f; stack)
-				if (!haveFormat(newList, f))
+				if (i >= defaultStack.length && !haveFormat(newList, f))
 				{
 					bool canSplit = true;
 					foreach (rf; stack[i+1..$])
@@ -488,6 +491,8 @@ class NestedFormatter
 					addFormat(f, block);
 				}
 
+			assert(stack.startsWith(cast(Format[])defaultStack));
+
 			foreach (f; newList)
 				if (haveActiveFormat(newList, f))
 					assert(haveActiveFormat(stack, f), "Format not in stack: " ~ f.toString());
@@ -518,7 +523,7 @@ class NestedFormatter
 
 		// close remaining tags
 		blockIndex = blocks.length;
-		foreach_reverse(rf; stack)
+		foreach_reverse (rf; stack[defaultStack.length..$])
 			removeFormat(rf, blocks[$-1]);
 
 		flush();

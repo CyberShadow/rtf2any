@@ -21,6 +21,9 @@
       <xs:element name="b" type="nodeType" />
       <xs:element name="i" type="nodeType" />
       <xs:element name="u" type="nodeType" />
+      <xs:element name="no-b" type="nodeType" />
+      <xs:element name="no-i" type="nodeType" />
+      <xs:element name="no-u" type="nodeType" />
       <xs:element name="sub" type="nodeType" />
       <xs:element name="super" type="nodeType" />
     </xs:choice>

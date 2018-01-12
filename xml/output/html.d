@@ -105,6 +105,18 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 						hn = new XmlNode(XmlNodeType.Node, state.inParagraph ? "span" : "div");
 						hn.attributes["style"] = "text-decoration: underline";
 						break;
+					case "no-b":
+						hn = new XmlNode(XmlNodeType.Node, state.inParagraph ? "span" : "div");
+						hn.attributes["style"] = "font-weight: normal";
+						break;
+					case "no-i":
+						hn = new XmlNode(XmlNodeType.Node, state.inParagraph ? "span" : "div");
+						hn.attributes["style"] = "font-style: normal";
+						break;
+					case "no-u":
+						hn = new XmlNode(XmlNodeType.Node, state.inParagraph ? "span" : "div");
+						hn.attributes["style"] = "text-decoration: none";
+						break;
 					case "align":
 						hn = new XmlNode(XmlNodeType.Node, state.inParagraph ? "span" : "div");
 						hn.attributes["style"] = "text-align: " ~ n.attributes.aaGet("dir");
@@ -229,6 +241,7 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 							break;
 						}
 						case "font-size":
+						case "text-decoration":
 							styleMap[style[0]] = style[1];
 							break;
 						default:

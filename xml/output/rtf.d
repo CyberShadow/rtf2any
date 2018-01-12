@@ -174,15 +174,12 @@ string toRTF(XmlDocument xml)
 				{
 					case "document":
 						break;
-					case "b":
-						attr.bold = true;
-						break;
-					case "i":
-						attr.italic = true;
-						break;
-					case "u":
-						attr.underline = true;
-						break;
+					case    "b": attr.bold      = true ; break;
+					case    "i": attr.italic    = true ; break;
+					case    "u": attr.underline = true ; break;
+					case "no-b": attr.bold      = false; break;
+					case "no-i": attr.italic    = false; break;
+					case "no-u": attr.underline = false; break;
 					case "align":
 						attr.alignment = n.attributes.aaGet("dir").to!Alignment;
 						break;
