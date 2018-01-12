@@ -367,11 +367,19 @@ struct Parser
 		}
 	}
 
-	Block[] parse()
+	Block[] parse(bool postProcess = true)
 	{
 		BlockAttr attr; // default attributes
 		parse(elements, attr, null);
 
+		if (postProcess)
+			this.postProcess();
+
+		return blocks;
+	}
+
+	Block[] postProcess()
+	{
 		{
 			Block[][] paragraphs = [];
 			size_t parStart = 0;
