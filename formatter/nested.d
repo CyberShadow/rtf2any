@@ -24,8 +24,7 @@ class NestedFormatter
 			italic,
 			underline,
 			alignment,
-			subscript,
-			superscript,
+			subSuper,
 			listItem,
 			paragraph,
 			column,
@@ -42,6 +41,9 @@ class NestedFormatter
 
 		union
 		{
+			/// Type.subSuper
+			SubSuper subSuper;
+
 			/// Type.alignment
 			Alignment alignment;
 
@@ -85,10 +87,8 @@ class NestedFormatter
 					return "Underline";
 				case Format.Type.alignment:
 					return .format("Align %s", alignment);
-				case Format.Type.subscript:
-					return "SubScript";
-				case Format.Type.superscript:
-					return "SuperScript";
+				case Format.Type.subSuper:
+					return .format("SubSuper %s", subSuper);
 				case Format.Type.indent:
 					return .format("Indent %d %d %s", leftIndent, firstLineIndent, list);
 				case Format.Type.font:
@@ -164,10 +164,8 @@ class NestedFormatter
 			list ~= Format(Format.Type.italic);
 		if (attr.underline)
 			list ~= Format(Format.Type.underline);
-		if (attr.subSuper == SubSuper.subscript)
-			list ~= Format(Format.Type.subscript);
-		if (attr.subSuper == SubSuper.superscript)
-			list ~= Format(Format.Type.superscript);
+		if (attr.subSuper)
+			list ~= args!(Format, type => Format.Type.subSuper, subSuper => attr.subSuper);
 		return list;
 	}
 
@@ -255,11 +253,8 @@ class NestedFormatter
 			case Format.Type.alignment:
 				addAlignment(f.alignment);
 				break;
-			case Format.Type.subscript:
-				addSubSuper(SubSuper.subscript);
-				break;
-			case Format.Type.superscript:
-				addSubSuper(SubSuper.superscript);
+			case Format.Type.subSuper:
+				addSubSuper(f.subSuper);
 				break;
 			case Format.Type.indent:
 				addIndent(f.leftIndent, f.firstLineIndent, f.list);
@@ -307,11 +302,8 @@ class NestedFormatter
 			case Format.Type.alignment:
 				removeAlignment(f.alignment);
 				break;
-			case Format.Type.subscript:
-				removeSubSuper(SubSuper.subscript);
-				break;
-			case Format.Type.superscript:
-				removeSubSuper(SubSuper.superscript);
+			case Format.Type.subSuper:
+				removeSubSuper(f.subSuper);
 				break;
 			case Format.Type.indent:
 				removeIndent(f.leftIndent, f.firstLineIndent, f.list);
