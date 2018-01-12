@@ -348,6 +348,8 @@ class NestedFormatter
 
 	static void preprocess(ref Block[] blocks)
 	{
+		blocks = blocks.dup;
+
 		// Duplicate the properties of paragraph and tab delimiters to
 		// their beginning as fake text nodes, so that the list->tree
 		// algorithm below promotes properties (e.g. font size) which
@@ -366,8 +368,6 @@ class NestedFormatter
 		// paragraphs / columns.
 
 		{
-			blocks = blocks.dup;
-
 			size_t paragraphIdx = size_t.max;
 			size_t tabIdx = size_t.max;
 			void insertDummy(size_t index, ref size_t idx, int* function(Block*) dg)
@@ -402,6 +402,21 @@ class NestedFormatter
 			}
 
 			insertDummy(0, paragraphIdx, b => &b.attr.paragraphIndex);
+		}
+
+		// Insert dummy nodes for final empty columns, as otherwise
+		// they will not be registered.
+		foreach_reverse (bi; 1..blocks.length)
+		{
+			if (blocks[bi-1].type == BlockType.Tab && blocks[bi].type == BlockType.NewParagraph)
+			{
+				Block dummy;
+				dummy.type = BlockType.Text;
+				dummy.text = null;
+				dummy.attr = blocks[bi-1].attr;
+				dummy.attr.columnIndex++;
+				blocks.insertInPlace(bi, dummy);
+			}
 		}
 	}
 
