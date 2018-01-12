@@ -332,9 +332,11 @@ struct Parser
 				case "pn":
 					parentAttr.list = true;
 					break;
+				case "pnlvlcont": // hide bullets
+					parentAttr.list = false;
+					break;
 				case "*":
 				case "pnlvlblt":
-				case "pnlvlcont":
 				case "pnf":
 				case "pnindent":
 					// Bullet list properties
