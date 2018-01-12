@@ -16,6 +16,7 @@ import ae.utils.xmllite;
 import ae.utils.xmlwriter;
 
 import rtf2any.xml.reader;
+import rtf2any.xml.helpers;
 
 string toHTML(XmlDocument xml)
 {
@@ -26,6 +27,7 @@ string toHTML(XmlDocument xml)
 		bool inParagraph;
 		int leftIndent, firstLineIndent;
 		bool firstLineIndentPending;
+		int initColNum;
 	}
 
 	uint colNum;
@@ -144,6 +146,38 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 						state.leftIndent = left;
 						state.firstLineIndent = firstLine;
 						state.firstLineIndentPending = firstLine && !list;
+
+						if (state.inTable)
+						{
+							auto tr = new XmlNode(XmlNodeType.Node, "tr");
+							parent.children ~= tr;
+
+							colNum = 0;
+							while (colNum < state.columns.length && state.columns[colNum] <= state.leftIndent + state.firstLineIndent)
+							{
+								tr.children ~= newNode("td");
+								colNum++;
+							}
+							state.initColNum = colNum;
+
+							auto td = new XmlNode(XmlNodeType.Node, "td");
+							tr.children ~= td;
+							auto colSpan = state.columns.length + 1 - colNum;
+							if (colSpan > 1)
+								td.attributes["colspan"] = colSpan.text;
+
+							if (list)
+							{
+								parent = td;
+								state.inTable = false;
+							}
+							else
+							{
+								auto table = new XmlNode(XmlNodeType.Node, "table");
+								td.children ~= table;
+								parent = table;
+							}
+						}
 						break;
 					}
 					case "font":
@@ -188,7 +222,7 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 						break;
 					case "p":
 						hn = new XmlNode(XmlNodeType.Node, state.inTable ? "tr" : "p");
-						colNum = 0;
+						colNum = state.initColNum;
 						state.inParagraph = true;
 						if (!state.inTable && state.firstLineIndentPending)
 						{
@@ -197,7 +231,7 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 						}
 						break;
 					case "col":
-						hn = new XmlNode(XmlNodeType.Node, "td");
+						hn = new XmlNode(XmlNodeType.Node, state.inTable ? "td" : "span");
 						if (colNum < state.columns.length)
 						{
 							auto width = state.columns[colNum] - (colNum ? state.columns[colNum-1] : state.leftIndent + state.firstLineIndent);
@@ -359,8 +393,10 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 					switch (node.tag)
 					{
 						case "p":
-						case "td":
 							newEnabled = false;
+							break;
+						case "td":
+							newEnabled = node.findNodes("p") || node.findNodes("table");
 							break;
 						case "li":
 						{
