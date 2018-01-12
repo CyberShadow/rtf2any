@@ -249,9 +249,6 @@ struct Parser
 				case "par":
 					preAppend();
 					BlockAttr parAttr = attr;
-					// discard some attributes for endlines
-					parAttr.subSuper = SubSuper.none;
-					parAttr.fontColor = defaultColor;
 					parAttr.columnIndex = -1;
 					blocks ~= Block(BlockType.NewParagraph, parAttr);
 					attr.paragraphIndex++;
