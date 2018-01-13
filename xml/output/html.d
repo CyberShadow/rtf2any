@@ -273,17 +273,25 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 					switch (style[0])
 					{
 						case "margin-left":
+						case "text-indent":
 						{
 							enforce(style[1].endsWith("pt"));
 							enforce(styleMap[style[0]].endsWith("pt"));
 							styleMap[style[0]] = (styleMap[style[0]][0..$-2].to!float + style[1][0..$-2].to!float).text ~ "pt";
 							break;
 						}
+						case "font-family":
 						case "font-size":
+						case "font-weight":
+						case "font-style":
 						case "text-decoration":
+						case "text-align":
+						case "vertical-align":
 						case "color":
 							styleMap[style[0]] = style[1];
 							break;
+						case "width":
+							return false;
 						default:
 							assert(false, "Don't know how to merge style: " ~ style[0]);
 					}
