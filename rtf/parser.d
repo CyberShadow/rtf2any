@@ -62,6 +62,8 @@ uint charsetToCodepage(uint charset)
 			return 1250;
 		case Charset.GREEK:
 			return 1253;
+		case Charset.TURKISH:
+			return 1254;
 		default:
 			throw new Exception("Unknown charset: " ~ charset.text);
 	}
@@ -78,6 +80,8 @@ string getCodePageName(uint codepage)
 			return "windows1252";
 		case 1253:
 			return "windows1253";
+		case 1254:
+			return "windows1254";
 		case CodePage.SYMBOL:
 			return "ascii8";
 		default:
