@@ -363,6 +363,8 @@ struct Parser
 					break;
 				case "s": // TODO (stylesheet style)
 					break;
+				case "keepn":
+					break;
 				default:
 					throw new Exception("Unknown RTF control word: " ~ e.word.word);
 				}
