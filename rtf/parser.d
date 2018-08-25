@@ -180,6 +180,8 @@ struct Parser
 				return;
 			case "pntxtb": // bullet char specifier
 				return;
+			case "stylesheet":
+				return; // TODO
 			case "*":
 				if (elements.length>1 && elements[1].type == ElementType.ControlWord)
 					switch (elements[1].word.word)
@@ -358,6 +360,8 @@ struct Parser
 							parentAttr.href = value[0..$-1];
 						return;
 					}
+					break;
+				case "s": // TODO (stylesheet style)
 					break;
 				default:
 					throw new Exception("Unknown RTF control word: " ~ e.word.word);
