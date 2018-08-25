@@ -200,6 +200,7 @@ class NestedFormatter
 	abstract void addText(string s);
 	void newParagraph() {}
 	void newPage() {}
+	void newLine() {}
 
 	void addBold(bool enabled) {}
 	void addItalic(bool enabled) {}
@@ -530,6 +531,9 @@ class NestedFormatter
 				case BlockType.PageBreak:
 					newPage();
 					break;
+				case BlockType.LineBreak:
+					newLine();
+					break;
 			}
 
 			prevList = newList;
@@ -568,6 +572,9 @@ class NestedFormatter
 				break;
 			case BlockType.PageBreak:
 				text = "PageBreak";
+				break;
+			case BlockType.LineBreak:
+				text = "LineBreak";
 				break;
 			default:
 				assert(0);

@@ -260,6 +260,10 @@ struct Parser
 					preAppend();
 					blocks ~= Block(BlockType.PageBreak);
 					break;
+				case "line":
+					preAppend();
+					blocks ~= Block(BlockType.LineBreak, attr);
+					break;
 				case "pard":
 					attr.leftIndent = parentAttr.leftIndent;
 					attr.firstLineIndent = parentAttr.firstLineIndent;

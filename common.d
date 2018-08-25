@@ -15,7 +15,10 @@ enum BlockType
 	Tab,
 
 	/// \page
-	PageBreak
+	PageBreak,
+
+	/// \line
+	LineBreak,
 }
 
 struct Font
@@ -93,6 +96,8 @@ struct Block
 			return s ~ ` Tab`;
 		case BlockType.PageBreak:
 			return s ~ ` PageBreak`;
+		case BlockType.LineBreak:
+			return s ~ ` LineBreak`;
 		}
 	}
 }
