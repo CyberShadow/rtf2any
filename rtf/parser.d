@@ -373,6 +373,12 @@ struct Parser
 					break;
 				case "keepn":
 					break;
+				case "hyphpar":
+					enforce(e.word.haveNum && e.word.num == 0, "Enabling hyphpar unsupported");
+					break;
+				case "kerning":
+					// TODO
+					break;
 				default:
 					throw new Exception("Unknown RTF control word: " ~ e.word.word);
 				}
