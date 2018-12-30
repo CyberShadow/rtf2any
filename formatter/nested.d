@@ -577,7 +577,7 @@ class NestedFormatter
 				text = "LineBreak";
 				break;
 			default:
-				assert(0);
+				//assert(0);
 			}
 			s ~= .format("%s:\n%s\n", attrs, text);
 			prevChanges = changes;
