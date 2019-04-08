@@ -40,6 +40,9 @@ class MediaWikiFormatter : NestedFormatter
 	override void addFontColor(int color) { pre(); s ~= .format(`<span style="color: #%06x">`, color); }
 	override void addTabs(int[] tabs) { if (listLevel==0) { inTable = true; s ~= "{|\n| "; } }
 	
+	override void removeBold(bool enabled) { pre(); s ~= "'''"; }
+	override void removeItalic(bool enabled) { pre(); s ~= "''"; }
+	override void removeUnderline(bool enabled) { pre(); s ~= enabled ? "</u>" : "<u>"; }
 	override void removeIndent(int left, int firstLine, bool list) { listLevel = left-1; }
 	override void removeFontSize(int size) { if (size > 25 && paraEnd) s ~= " =="; else if (size > 20 && paraEnd) s ~= " ==="; else if (size < 20) s ~= "</small>"; }
 	override void removeFontColor(int color) { s ~= "</span>"; }
