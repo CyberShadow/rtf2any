@@ -7,7 +7,18 @@ import std.array;
 
 class MediaWikiFormatter : NestedFormatter
 {
-	this(Block[] blocks) { super(blocks); }
+	this(Block[] blocks)
+	{
+		// Force terminating of all formatting on the same line
+		foreach (ref block; blocks)
+			if (block.type == BlockType.NewParagraph)
+			{
+				block.attr.fontSize = 0;
+				block.attr.bold = block.attr.italic = block.attr.underline = false;
+				block.attr.fontColor = int.max;
+			}
+		super(blocks);
+	}
 
 	int listLevel, bulletPending;
 	bool inTable;
