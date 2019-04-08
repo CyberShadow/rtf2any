@@ -35,7 +35,7 @@ class MediaWikiFormatter : NestedFormatter
 	override void addBold(bool enabled) { pre(); s ~= "'''"; }
 	override void addItalic(bool enabled) { pre(); s ~= "''"; }
 	override void addUnderline(bool enabled) { pre(); s ~= enabled ? "<u>" : "</u>"; }
-	override void addIndent(int left, int firstLine, bool list) { listLevel = left; bulletPending = true; }
+	override void addIndent(int left, int firstLine, bool list) { listLevel += list; bulletPending = true; }
 	override void addFontSize(int size) { pre(); if (size > 25 && paraStart) s ~= "== "; else if (size > 20 && paraStart) s ~= "=== "; else if (size < 20) s ~= "<small>"; }
 	override void addFontColor(int color) { pre(); s ~= .format(`<span style="color: #%06x">`, color); }
 	override void addTabs(int[] tabs) { if (listLevel==0) { inTable = true; s ~= "{|\n| "; } }
@@ -43,7 +43,7 @@ class MediaWikiFormatter : NestedFormatter
 	override void removeBold(bool enabled) { pre(); s ~= "'''"; }
 	override void removeItalic(bool enabled) { pre(); s ~= "''"; }
 	override void removeUnderline(bool enabled) { pre(); s ~= enabled ? "</u>" : "<u>"; }
-	override void removeIndent(int left, int firstLine, bool list) { listLevel = left-1; }
+	override void removeIndent(int left, int firstLine, bool list) { listLevel -= list; }
 	override void removeFontSize(int size) { if (size > 25 && paraEnd) s ~= " =="; else if (size > 20 && paraEnd) s ~= " ==="; else if (size < 20) s ~= "</small>"; }
 	override void removeFontColor(int color) { s ~= "</span>"; }
 	override void removeTabs(int[] tabs) { if (inTable) { inTable = false; s = s[0..$-5] ~ "|}\n"; } }
