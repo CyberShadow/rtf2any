@@ -553,6 +553,7 @@ class NestedFormatter
 
 	static string dumpBlocks(Block[] blocks)
 	{
+		import std.format : format;
 		string s;
 		Format[] prevChanges;
 		foreach (block; blocks)
@@ -565,7 +566,7 @@ class NestedFormatter
 			switch (block.type)
 			{
 			case BlockType.Text:
-				text = block.text;
+				text = format("%(%s%)", [block.text]);
 				break;
 			case BlockType.NewParagraph:
 				text = "NewParagraph";
