@@ -26,7 +26,14 @@ class MediaWikiFormatter : NestedFormatter
 		}
 	}
 
-	@property bool paraStart() { return blockIndex==0 || blocks[blockIndex-1].type == BlockType.NewParagraph; }
+	@property bool paraStart()
+	{
+		auto index = blockIndex;
+		// Skip dummy nodes as per NestedFormatter.preprocess
+		while (index && blocks[index-1].type == BlockType.Text && blocks[index-1].text == "")
+			index--;
+		return index==0 || blocks[index-1].type == BlockType.NewParagraph;
+	}
 	@property bool paraEnd() { return blockIndex==blocks.length || blocks[blockIndex].type == BlockType.NewParagraph; }
 
 	override void addText(string text) { pre(); if (inTable) text = text.replace("\t", " || "); s ~= text.replace("<", "&lt;").replace(">", "&gt;").replace("{{", "<nowiki>{{</nowiki>").replace("}}", "<nowiki>}}</nowiki>"); }
