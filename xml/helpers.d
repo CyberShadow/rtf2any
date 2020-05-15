@@ -3,6 +3,7 @@ module rtf2any.xml.helpers;
 import std.algorithm.iteration;
 import std.array;
 
+import ae.utils.aa;
 import ae.utils.xmllite;
 
 bool isTag(XmlNode n, string tag, XmlNodeType type = XmlNodeType.Node)
@@ -31,12 +32,24 @@ XmlNode[] findNodes(XmlNode n, string tag)
 	return n.children.map!(n => findNodes(n, tag)).join;
 }
 
-XmlNode newNode(XmlNodeType type, string tag, string[string] attributes = null, XmlNode[] children = null)
+alias Attributes = OrderedMap!(string, string);
+
+XmlNode newNode(XmlNodeType type, string tag, Attributes attributes, XmlNode[] children = null)
 {
 	auto node = new XmlNode(type, tag);
 	node.attributes = attributes;
 	node.children = children;
 	return node;
+}
+
+XmlNode newNode(string tag, Attributes attributes, XmlNode[] children = null)
+{
+	return newNode(XmlNodeType.Node, tag, attributes, children);
+}
+
+XmlNode newNode(XmlNodeType type, string tag, string[string] attributes = null, XmlNode[] children = null)
+{
+	return newNode(type, tag, Attributes(attributes), children);
 }
 
 XmlNode newNode(string tag, string[string] attributes = null, XmlNode[] children = null)
