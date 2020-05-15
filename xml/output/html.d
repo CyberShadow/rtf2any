@@ -261,67 +261,83 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 		foreach (child; n.children)
 			walk(child, hn, state);
 
-		bool mergeStyle(XmlNode target, XmlNode[] sources...)
+		bool mergeNodes(XmlNode target, XmlNode[] sources...)
 		{
-			auto styles = sources
-				.map!(source => source.attributes.get("style", null))
-				.filter!identity
-				.map!(style => style.split(";"))
-				.join()
-				.map!(style => style.findSplit(":"))
-				.map!(style => tuple(style[0].strip, style[2].strip))
-				.array;
+			string[][string] attributes;
+			foreach (source; sources)
+				foreach (name, value; source.attributes)
+					attributes[name] ~= value;
 
-			OrderedMap!(string, string) styleMap;
-			foreach (style; styles)
-				if (style[0] in styleMap)
+			foreach (name, values; attributes)
+			{
+				switch (name)
 				{
-					switch (style[0])
-					{
-						case "margin-left":
-						case "text-indent":
-						{
-							enforce(style[1].endsWith("pt"));
-							enforce(styleMap[style[0]].endsWith("pt"));
-							styleMap[style[0]] = (styleMap[style[0]][0..$-2].to!float + style[1][0..$-2].to!float).text ~ "pt";
-							break;
-						}
-						case "font-family":
-						case "font-size":
-						case "font-weight":
-						case "font-style":
-						case "text-decoration":
-						case "text-align":
-						case "vertical-align":
-						case "color":
-							styleMap[style[0]] = style[1];
-							break;
-						case "width":
+					case "style":
+						auto styles = values
+							.map!(style => style.split(";"))
+							.join()
+							.map!(style => style.findSplit(":"))
+							.map!(style => tuple(style[0].strip, style[2].strip))
+							.array;
+
+						OrderedMap!(string, string) styleMap;
+						foreach (style; styles)
+							if (style[0] in styleMap)
+							{
+								switch (style[0])
+								{
+									case "margin-left":
+									case "text-indent":
+									{
+										enforce(style[1].endsWith("pt"));
+										enforce(styleMap[style[0]].endsWith("pt"));
+										styleMap[style[0]] = (styleMap[style[0]][0..$-2].to!float + style[1][0..$-2].to!float).text ~ "pt";
+										break;
+									}
+									case "font-family":
+									case "font-size":
+									case "font-weight":
+									case "font-style":
+									case "text-decoration":
+									case "text-align":
+									case "vertical-align":
+									case "color":
+										styleMap[style[0]] = style[1];
+										break;
+									case "width":
+										return false;
+									default:
+										assert(false, "Don't know how to merge style: " ~ style[0]);
+								}
+							}
+							else
+								styleMap[style[0]] = style[1];
+
+						assert(target.type == XmlNodeType.Node);
+						if (target.tag == "table" && "padding-left" in styleMap)
 							return false;
-						default:
-							assert(false, "Don't know how to merge style: " ~ style[0]);
-					}
+
+						string[] decls;
+						foreach (name, value; styleMap)
+							decls ~= name ~ ": " ~ value;
+						target.attributes["style"] = decls.join("; ");
+						break;
+
+					case "id":
+						if (values.uniq.array.length > 1)
+							return false;
+						target.attributes["id"] = values[0];
+						break;
+
+					case "href":
+						if (values.length > 1 || target.tag != "a")
+							return false;
+						break;
+
+					default:
+						return false;
 				}
-				else
-					styleMap[style[0]] = style[1];
-
-			assert(target.type == XmlNodeType.Node);
-			if (target.tag == "table" && "padding-left" in styleMap)
-				return false;
-
-			auto ids = sources
-				.map!(source => source.attributes.get("id", null))
-				.filter!identity
-				.array;
-			if (ids.length > 1)
-				return false;
-
-			string[] values;
-			foreach (name, value; styleMap)
-				values ~= name ~ ": " ~ value;
-			target.attributes["style"] = values.join("; ");
-			if (ids.length)
-				target.attributes["id"] = ids[0];
+			}
 
 			return true;
 		}
@@ -332,7 +348,7 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 				if (child.type == XmlNodeType.Node && child.tag == "div")
 				{
 					foreach (child2; child.children)
-						mergeStyle(child2, child, child2).enforce("Can't collapse div inside table");
+						mergeNodes(child2, child, child2).enforce("Can't collapse div inside table");
 					hn.children = hn.children[0..i] ~ child.children ~ hn.children[i+1..$];
 				}
 
@@ -340,14 +356,14 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 			hn.children[0].type == XmlNodeType.Node &&
 			hn.children[0].tag.isOneOf("div", "span") &&
 			"style" in hn.children[0].attributes &&
-			mergeStyle(hn, hn, hn.children[0]))
+			mergeNodes(hn, hn, hn.children[0]))
 			hn.children = hn.children[0].children;
 
 		if (hn.children.length == 1 &&
 			hn.children[0].type == XmlNodeType.Node &&
 			hn.tag.isOneOf("div", "span") &&
 			"style" in hn.attributes &&
-			mergeStyle(hn.children[0], hn, hn.children[0]))
+			mergeNodes(hn.children[0], hn, hn.children[0]))
 			hn = hn.children[0];
 
 		if (hn.type == XmlNodeType.Node && hn.tag == "tr")
