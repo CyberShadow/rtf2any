@@ -334,6 +334,10 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 							return false;
 						break;
 
+					case "class":
+						target.attributes["class"] = values.join(" ");
+						break;
+
 					default:
 						return false;
 				}
