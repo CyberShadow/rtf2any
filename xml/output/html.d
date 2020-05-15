@@ -242,8 +242,14 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 					default:
 						throw new Exception("Unknown XML tag " ~ n.tag);
 				}
-				if ("id" in n.attributes)
-					hn.attributes["id"] = n.attributes["id"];
+
+				foreach (name, value; n.attributes)
+					if (name == "id")
+						hn.attributes["id"] = value;
+					else
+					if (name.skipOver("html:"))
+						hn.attributes[name] = value;
+
 				break;
 			case XmlNodeType.Text:
 				hn = new XmlNode(XmlNodeType.Text, n.tag);
