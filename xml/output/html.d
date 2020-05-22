@@ -377,7 +377,9 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 			else
 				foreach (i, child; hn.children[0..$-1])
 				{
-					assert(child.type == XmlNodeType.Node && child.tag == "td");
+					if (child.isWhitespace)
+						continue;
+					assert(child.isTag("td"));
 					if (child.attributes.get("style", null).indexOf("width:") < 0)
 						child.attributes["style"] = ("style" in child.attributes ? child.attributes["style"] ~ "; " : "") ~ "width: 36pt";
 				}
@@ -385,10 +387,10 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 
 		if (hn.type == XmlNodeType.Node && hn.tag == "table")
 			foreach (child; hn.children)
-				assert(child.type == XmlNodeType.Node && child.tag == "tr");
+				assert(child.isWhitespace || child.isTag("tr"));
 		if (hn.type == XmlNodeType.Node && hn.tag == "tr")
 			foreach (child; hn.children)
-				assert(child.type == XmlNodeType.Node && child.tag == "td");
+				assert(child.isWhitespace || child.isTag("td"));
 
 		parent.children ~= hn;
 	}
