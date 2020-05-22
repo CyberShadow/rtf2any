@@ -12,6 +12,12 @@ bool isTag(XmlNode n, string tag, XmlNodeType type = XmlNodeType.Node)
 	return n.type == type && n.tag ==  tag;
 }
 
+bool isWhitespace(XmlNode n)
+{
+	import std.string : strip;
+	return n.type == XmlNodeType.Text && !strip(n.tag).length;
+}
+
 XmlNode findOnlyChild(XmlNode n, string tag, XmlNodeType type = XmlNodeType.Node)
 {
 	return n.isTag(tag, type) ? n :
