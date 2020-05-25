@@ -58,6 +58,8 @@ uint charsetToCodepage(uint charset)
 			throw new Exception("System-specific charset");
 		case Charset.SYMBOL:
 			return CodePage.SYMBOL;
+		case Charset.RUSSIAN:
+			return 1251;
 		case Charset.EASTEUROPE:
 			return 1250;
 		case Charset.GREEK:
@@ -76,6 +78,8 @@ string getCodePageName(uint codepage)
 	{
 		case 1250:
 			return "windows1250";
+		case 1251:
+			return "windows1251";
 		case 1252:
 			return "windows1252";
 		case 1253:
