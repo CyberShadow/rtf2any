@@ -379,7 +379,7 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 				{
 					if (child.isWhitespace)
 						continue;
-					assert(child.isTag("td"));
+					enforce(child.isTag("td"), "Expected table cell but found: " ~ hn.toString());
 					if (child.attributes.get("style", null).indexOf("width:") < 0)
 						child.attributes["style"] = ("style" in child.attributes ? child.attributes["style"] ~ "; " : "") ~ "width: 36pt";
 				}
@@ -387,10 +387,10 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 
 		if (hn.type == XmlNodeType.Node && hn.tag == "table")
 			foreach (child; hn.children)
-				assert(child.isWhitespace || child.isTag("tr"));
+				enforce(child.isWhitespace || child.isTag("tr"), "Expected table row but found: " ~ child.toString());
 		if (hn.type == XmlNodeType.Node && hn.tag == "tr")
 			foreach (child; hn.children)
-				assert(child.isWhitespace || child.isTag("td"));
+				enforce(child.isWhitespace || child.isTag("td"), "Expected table cell but found: " ~ child.toString());
 
 		parent.children ~= hn;
 	}
