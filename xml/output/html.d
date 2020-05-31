@@ -370,7 +370,7 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 			mergeNodes(hn.children[0], hn, hn.children[0]))
 			hn = hn.children[0];
 
-		if (hn.type == XmlNodeType.Node && hn.tag == "tr")
+		if (hn.isTag("tr"))
 		{
 			if (hn.children.length == 0)
 				hn.children ~= new XmlNode(XmlNodeType.Node, "td");
@@ -384,6 +384,8 @@ EOF".strip.replace("\n", "\n\t\t\t"));
 						child.attributes["style"] = ("style" in child.attributes ? child.attributes["style"] ~ "; " : "") ~ "width: 36pt";
 				}
 		}
+		if (hn.isTag("ul"))
+			enforce(hn.children.length, "Empty list not allowed");
 
 		if (hn.type == XmlNodeType.Node && hn.tag == "table")
 			foreach (child; hn.children)
