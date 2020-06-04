@@ -57,7 +57,7 @@ string toRTF(XmlDocument xml)
 		{
 			if (!attrInitialized
 			 || (oldAttr.tabs.length && attr.tabs != oldAttr.tabs)
-			 || (oldAttr.list && !attr.list)
+			 || (oldAttr.list != attr.list) // Reset when enabling lists too, to work around LibreOffice bug
 			 || (oldAttr.font && !attr.font)
 			)
 			{
@@ -110,9 +110,8 @@ string toRTF(XmlDocument xml)
 				rtf.putDir("q" ~ "lcrj"[attr.alignment]);
 			if (attr.subSuper != oldAttr.subSuper)
 				rtf.putDir(["nosupersub", "sub", "super"][attr.subSuper]);
-			if (attr.list != oldAttr.list)
+			if (attr.list && !oldAttr.list)
 			{
-				assert(attr.list);
 				rtf.beginGroup();
 				rtf.putDir("*");
 				rtf.putDir("pn");
