@@ -42,19 +42,37 @@ struct RTFWriter
 	void putText(string s)
 	{
 		foreach (dchar c; s)
-			if (c == '\\' || c == '{' || c == '}')
-				putDir(c.text);
-			else
-			if (c >= 0x80)
+			switch (c)
 			{
-				putDir("u", int(c));
-				putRawText("?");
+				case '\\':
+				case '{':
+				case '}':
+					putDir(c.text);
+					break;
+
+				case '\&mdash;' : putDir("emdash"   ); break;
+				case '\&ndash;' : putDir("endash"   ); break;
+				case '\&lsquo;' : putDir("lquote"   ); break;
+				case '\&rsquo;' : putDir("rquote"   ); break;
+				case '\&ldquo;' : putDir("ldblquote"); break;
+				case '\&rdquo;' : putDir("rdblquote"); break;
+				case '\&bullet;': putDir("bullet"   ); break;
+				case '\&nbsp;'  : putDir("~"        ); break;
+
+				case 0x00:
+					..
+				case 0x1F:
+					throw new Exception("Control character in input: " ~ s);
+
+				default:
+					if (c >= 0x80)
+					{
+						putDir("u", int(c));
+						putRawText("?");
+					}
+					else
+						putRawText(c.text);
 			}
-			else
-			if (c >= 0x20)
-				putRawText(c.text);
-			else
-				throw new Exception("Control character in input: " ~ s);
 	}
 
 	void beginGroup() { buf.put("{"); postDir = false; }
