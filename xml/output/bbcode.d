@@ -42,14 +42,14 @@ string toBBCode(XmlDocument xml)
 	size_t lastCheckpoint;
 	string[3][] lastCheckpointStack;
 
-	void visit(XmlNode n, State state)
+	void visit(XmlNode n, State state, size_t childIndex)
 	{
 		void descend(string tag, string arguments = null, string closeTag = null)
 		{
 			void visitChildren()
 			{
-				foreach (child; n.children)
-					visit(child, state);
+				foreach (i, child; n.children)
+					visit(child, state, i);
 			}
 
 			if (tag || closeTag)
@@ -147,7 +147,8 @@ string toBBCode(XmlDocument xml)
 						descend(null);
 						break;
 					case "li":
-						checkpoint();
+						if (childIndex)
+							checkpoint();
 						descend("*", null, "");
 						break;
 					case "p":
@@ -171,7 +172,7 @@ string toBBCode(XmlDocument xml)
 		}
 	}
 
-	visit(xml["document"], State.init);
+	visit(xml["document"], State.init, 0);
 	result.put(buf.data);
 	return result.data;
 }
