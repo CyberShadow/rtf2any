@@ -84,6 +84,8 @@ string toBBCode(XmlDocument xml)
 				buf.put(remainder);
 			}
 
+			enforce(buf.data.length <= postLimit, "Splitting failed");
+
 			lastCheckpoint = buf.data.length;
 			lastCheckpointStack = stack;
 		}
