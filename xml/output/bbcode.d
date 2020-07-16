@@ -34,17 +34,17 @@ string toBBCode(XmlDocument xml)
 	}
 
 	// uint colNum;
-	string[2][] stack;
+	string[3][] stack;
 
 	Appender!string result;
 	Appender!(char[]) buf;
 
 	size_t lastCheckpoint;
-	string[2][] lastCheckpointStack;
+	string[3][] lastCheckpointStack;
 
 	void visit(XmlNode n, State state)
 	{
-		void descend(string tag, string arguments = null)
+		void descend(string tag, string arguments = null, string closeTag = null)
 		{
 			void visitChildren()
 			{
@@ -52,14 +52,16 @@ string toBBCode(XmlDocument xml)
 					visit(child, state);
 			}
 
-			if (tag)
+			if (tag || closeTag)
 			{
-				stack ~= [tag, arguments];
+				if (!closeTag) closeTag = tag;
+				stack ~= [tag, arguments, closeTag];
 				scope(exit) stack = stack[0..$-1];
 
 				buf.formattedWrite!"[%s%s]"(tag, arguments);
 				visitChildren();
-				buf.formattedWrite!"[/%s]"(tag);
+				if (closeTag.length)
+					buf.formattedWrite!"[/%s]"(closeTag);
 			}
 			else
 				visitChildren();
@@ -71,7 +73,8 @@ string toBBCode(XmlDocument xml)
 			{
 				result.put(buf.data[0 .. lastCheckpoint]);
 				foreach_reverse (n; lastCheckpointStack)
-					result.formattedWrite!"[/%s]"(n[0]);
+					if (n[2].length)
+						result.formattedWrite!"[/%s]"(n[2]);
 				result.put("\n\n---------------------------------------------------------------------------------------------------------------------------\n\n");
 				foreach (n; lastCheckpointStack)
 					result.formattedWrite!"[%s%s]"(n[0], n[1]);
@@ -145,7 +148,7 @@ string toBBCode(XmlDocument xml)
 						break;
 					case "li":
 						checkpoint();
-						descend("li");
+						descend("*", null, "");
 						break;
 					case "p":
 						descend(null);
