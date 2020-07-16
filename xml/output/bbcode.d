@@ -7,6 +7,7 @@ import std.conv;
 import std.exception;
 import std.format;
 import std.path;
+import std.range.primitives;
 import std.string;
 import std.typecons;
 
@@ -25,12 +26,7 @@ string toBBCode(XmlDocument xml)
 {
 	struct State
 	{
-		bool inTable;
-		int[] columns;
-		bool inParagraph;
-		int leftIndent, firstLineIndent;
-		bool firstLineIndentPending;
-		int initColNum;
+		bool splittingAllowed = true;
 	}
 
 	// uint colNum;
@@ -69,6 +65,9 @@ string toBBCode(XmlDocument xml)
 
 		void checkpoint()
 		{
+			if (!state.splittingAllowed)
+				return;
+
 			if (buf.data.length > postLimit)
 			{
 				result.put(buf.data[0 .. lastCheckpoint]);
@@ -119,7 +118,6 @@ string toBBCode(XmlDocument xml)
 						break;
 					case "indent":
 					{
-						checkpoint();
 						bool list = n.attributes.aaGet("list").to!bool;
 						descend(list ? "list" : null);
 						break;
@@ -149,8 +147,8 @@ string toBBCode(XmlDocument xml)
 						descend(null);
 						break;
 					case "li":
-						if (childIndex)
-							checkpoint();
+						if (childIndex == 0)
+							state.splittingAllowed = false;
 						descend("*", null, "");
 						break;
 					case "p":
@@ -167,6 +165,8 @@ string toBBCode(XmlDocument xml)
 
 				break;
 			case XmlNodeType.Text:
+				if (stack.filter!(s => s[0] == "*").walkLength <= 2)
+					checkpoint();
 				buf.put(n.tag);
 				break;
 			default:
