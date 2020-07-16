@@ -19,6 +19,8 @@ import ae.utils.xmlwriter;
 import rtf2any.xml.reader;
 import rtf2any.xml.helpers;
 
+enum postLimit = 20000 - 200;
+
 string toBBCode(XmlDocument xml)
 {
 	struct State
@@ -32,14 +34,56 @@ string toBBCode(XmlDocument xml)
 	}
 
 	// uint colNum;
-	// XmlNode[] stack;
+	string[2][] stack;
 
-	Appender!string o;
+	Appender!string result;
+	Appender!(char[]) buf;
+
+	size_t lastCheckpoint;
+	string[2][] lastCheckpointStack;
 
 	void visit(XmlNode n, State state)
 	{
-		// stack ~= n;
-		// scope(exit) stack = stack[0..$-1];
+		void descend(string tag, string arguments = null)
+		{
+			void visitChildren()
+			{
+				foreach (child; n.children)
+					visit(child, state);
+			}
+
+			if (tag)
+			{
+				stack ~= [tag, arguments];
+				scope(exit) stack = stack[0..$-1];
+
+				buf.formattedWrite!"[%s%s]"(tag, arguments);
+				visitChildren();
+				buf.formattedWrite!"[/%s]"(tag);
+			}
+			else
+				visitChildren();
+		}
+
+		void checkpoint()
+		{
+			if (buf.data.length > postLimit)
+			{
+				result.put(buf.data[0 .. lastCheckpoint]);
+				foreach_reverse (n; lastCheckpointStack)
+					result.formattedWrite!"[/%s]"(n[0]);
+				result.put("\n\n---------------------------------------------------------------------------------------------------------------------------\n\n");
+				foreach (n; lastCheckpointStack)
+					result.formattedWrite!"[%s%s]"(n[0], n[1]);
+
+				auto remainder = buf.data[lastCheckpoint .. $].idup;
+				buf.clear();
+				buf.put(remainder);
+			}
+
+			lastCheckpoint = buf.data.length;
+			lastCheckpointStack = stack;
+		}
 
 		switch (n.type)
 		{
@@ -47,98 +91,69 @@ string toBBCode(XmlDocument xml)
 				switch (n.tag)
 				{
 					case "document":
-						foreach (child; n.children)
-							visit(child, state);
+						descend(null);
 						break;
 					case "b":
 					case "i":
 					case "u":
 					case "sub":
-						o.formattedWrite!"[%s]"(n.tag);
-						foreach (child; n.children)
-							visit(child, state);
-						o.formattedWrite!"[/%s]"(n.tag);
+						descend(n.tag);
 						break;
 					case "super":
-						o ~= "[sup]";
-						foreach (child; n.children)
-							visit(child, state);
-						o ~= "[/sup]";
+						descend("sup");
 						break;
-					case "no-b":
-					case "no-i":
-					case "no-u":
-						o.formattedWrite!"[/%s]"(n.tag);
-						foreach (child; n.children)
-							visit(child, state);
-						o.formattedWrite!"[%s]"(n.tag);
-						break;
+					// case "no-b":
+					// case "no-i":
+					// case "no-u":
+					// 	o.formattedWrite!"[/%s]"(n.tag);
+					// 	visitChildren();
+					// 	o.formattedWrite!"[%s]"(n.tag);
+					// 	break;
 					case "align":
-						o.formattedWrite!"[%s]"(n.attributes.aaGet("dir"));
-						foreach (child; n.children)
-							visit(child, state);
-						o.formattedWrite!"[/%s]"(n.attributes.aaGet("dir"));
+						descend(n.attributes.aaGet("dir"));
 						break;
 					case "indent":
 					{
+						checkpoint();
 						bool list = n.attributes.aaGet("list").to!bool;
-						if (list) o ~= "[list]";
-						foreach (child; n.children)
-							visit(child, state);
-						if (list) o ~= "[/list]";
+						descend(list ? "list" : null);
 						break;
 					}
 					case "font":
 						// TODO?
-						foreach (child; n.children)
-							visit(child, state);
+						descend(null);
 						break;
 					case "size":
 					{
 						auto size = n.attributes.aaGet("pt").to!int;
-						if (size != 20) o.formattedWrite!"[size=%spt]"(size / 2f);
-						foreach (child; n.children)
-							visit(child, state);
-						if (size != 20) o ~= "[/size]";
+						descend(size != 20 ? "size" : null, format!"=%spt"(size / 2f));
 						break;
 					}
 					case "color":
-						o.formattedWrite!"[color=%s]"(n.attributes.aaGet("rgb"));
-						foreach (child; n.children)
-							visit(child, state);
-						o ~= "[/color]";
+						descend("color", format!"=%s"(n.attributes.aaGet("rgb")));
 						break;
 					case "hyperlink":
-						o.formattedWrite!"[url=%s]"(n.attributes.aaGet("url"));
-						foreach (child; n.children)
-							visit(child, state);
-						o ~= "[/url]";
+						descend("url", format!"=%s"(n.attributes.aaGet("url")));
 						break;
 					case "local-link":
 						// No equivalent
-						foreach (child; n.children)
-							visit(child, state);
+						descend(null);
 						break;
 					case "tabs":
 						// TODO
-						foreach (child; n.children)
-							visit(child, state);
+						descend(null);
 						break;
 					case "li":
-						o ~= "[li]";
-						foreach (child; n.children)
-							visit(child, state);
-						o ~= "[/li]";
+						checkpoint();
+						descend("li");
 						break;
 					case "p":
-						foreach (child; n.children)
-							visit(child, state);
-						o ~= "\n";
+						descend(null);
+						buf.put("\n");
 						break;
 					case "col":
 						// TODO
-						foreach (child; n.children)
-							visit(child, state);
+						descend(null);
 						break;
 					default:
 						throw new Exception("Unknown XML tag " ~ n.tag);
@@ -146,7 +161,7 @@ string toBBCode(XmlDocument xml)
 
 				break;
 			case XmlNodeType.Text:
-				o ~= n.tag;
+				buf.put(n.tag);
 				break;
 			default:
 				throw new Exception("Unknown XML node type");
@@ -154,5 +169,6 @@ string toBBCode(XmlDocument xml)
 	}
 
 	visit(xml["document"], State.init);
-	return o.data;
+	result.put(buf.data);
+	return result.data;
 }
