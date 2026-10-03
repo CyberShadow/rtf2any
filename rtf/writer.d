@@ -62,7 +62,7 @@ struct RTFWriter
 				case 0x00:
 					..
 				case 0x1F:
-					throw new Exception("Control character in input: " ~ s);
+					throw new Exception("Control character in input: " ~ [s].text);
 
 				default:
 					if (c >= 0x80)
